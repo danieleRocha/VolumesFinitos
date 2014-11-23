@@ -1,23 +1,31 @@
-#include "DifusaoComGeracao1D.h"
+#include "ConducaoPino1D.h"
 
-bool DifusaoComGeracao1D::Resolver()
+bool ConducaoPino1D::Resolver()
 {
 	bool calculou = true;
 
 	calculou =  SolicitarDadosDeEntrada();
 	if(!calculou) return calculou;
 
-	L = 1.0;//m
-	qK =  5.0;//K/m²
+	L = 0.05; //[m] Comprimento do pino
+	h =  5.0; //[W/(m²K)] Coeficiente de convecção
+	D = 0.01; //[m] Diâmetro do pino
+	k = 10.0; //[W/(mK)] Condutividade térmica do pino
+	TiInfinito = 293.0;//[K] Temperatura do ambiente
+	TBase = 373.0;//[K] Temperatura da base do pino
 
+	P=M_PI*D;//m Perímetro do pino
+	Ac = M_PI*D*D/4;// m² Área da seção transversal do pino
+
+	m2 = (h*P)/(k*Ac); //Parâmetro admensional
+	
 	//Passa dados para o objeto TermoFonte
-	(static_cast<TermoFonteDifusaoComGeracao1D*>(TermoFonte))->qK = qK;
+	(static_cast<TermoFonteConducaoPino1D*>(TermoFonte))->m2 = m2;
 
 	x0 = 0.0;//m
 	xL = L;//m
-	fi0 = 0.0;
-	fiL = 0.0;
-
+	fi0 = TBase-TiInfinito;
+	
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
 	arquivo = ofstream("resultado.txt");
@@ -61,7 +69,7 @@ bool DifusaoComGeracao1D::Resolver()
 	return calculou;
 }
 
-bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
+bool ConducaoPino1D::SolicitarDadosDeEntrada()
 {
 	bool errou = false;
 
@@ -86,47 +94,55 @@ bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void DifusaoComGeracao1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
+void ConducaoPino1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
-	fiAnalitico[numeroDeVolumes+1] = fiL;
-	fiNumerico[numeroDeVolumes+1] = fiL;
-
+	fiNumerico[numeroDeVolumes+1] = 62.125;
+	
 	CondicaoDeContornoEsquerda = new CondicaoDeContorno();
 	CondicaoDeContornoEsquerda->tipo= CondicaoDeContorno::primeiroTipo;
 	CondicaoDeContornoEsquerda->fi = fi0;
 
-	CondicaoDeContornoDireita = new CondicaoDeContorno();
+	/*CondicaoDeContornoDireita = new CondicaoDeContorno();
 	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::primeiroTipo;
-	CondicaoDeContornoDireita->fi = fiL;
+	CondicaoDeContornoDireita->fi = 62.125;*/
+
+	CondicaoDeContornoDireita = new CondicaoDeContorno();
+	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::terceitoTipo;
+	CondicaoDeContornoDireita->alfa = h/k;
+	CondicaoDeContornoDireita->fiInfinito = 0.0; //Para cálculo adimensional -->fi = (T - Tinfinito)
 
 }
 
-void DifusaoComGeracao1D::IniciarVariavelNumerica(double* fiNumerico)
+void ConducaoPino1D::IniciarVariavelNumerica(double* fiNumerico)
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
-		fiNumerico[i] = 0.0;
+		fiNumerico[i] = fi0;
 	}
 }
 
-bool DifusaoComGeracao1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
+bool ConducaoPino1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
 {
+	double m = pow(m2,0.5);
+
 	for(int i=1;i<=numeroDeVolumes+1;i++)
 	{
-		fiAnalitico[i] = -qK*x[i]*x[i]/2 + 2.5*x[i];
+		fiAnalitico[i] = ((cosh(m*(L-x[i]))+(h/(m*k))*sinh(m*(L-x[i])))/
+			(cosh(m*L)+(h/(m*k))*sinh(m*L)))*fi0;
 	}
 
 	return true;
 }
 
-double DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D::Calcular(double fi)
+double ConducaoPino1D::TermoDifusivoConducaoPino1D::Calcular(double fi)
 {
 	return 1.0;
 }
 
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi)
+double ConducaoPino1D::TermoFonteConducaoPino1D::Calcular(double fi)
 {
-	return qK;
+	return -m2*fi;
 }
+

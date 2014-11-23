@@ -80,11 +80,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CondicaoDeContorno.cpp" />
     <ClCompile Include="Difusividade.cpp" />
     <ClCompile Include="TermoFonte.cpp" />
     <ClCompile Include="VolumesFinitos.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CondicaoDeContorno.h" />
     <ClInclude Include="Difusividade.h" />
     <ClInclude Include="TermoFonte.h" />
     <ClInclude Include="VolumesFinitos.h" />

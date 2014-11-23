@@ -1,22 +1,16 @@
-#include "DifusaoComGeracao1D.h"
+#include "DifusaoComGeracaoEDifusividadeVariavel1D.h"
 
-bool DifusaoComGeracao1D::Resolver()
+bool DifusaoComGeracaoEDifusividadeVariavel1D::Resolver()
 {
 	bool calculou = true;
 
 	calculou =  SolicitarDadosDeEntrada();
 	if(!calculou) return calculou;
 
-	L = 1.0;//m
-	qK =  5.0;//K/m²
-
-	//Passa dados para o objeto TermoFonte
-	(static_cast<TermoFonteDifusaoComGeracao1D*>(TermoFonte))->qK = qK;
-
 	x0 = 0.0;//m
-	xL = L;//m
-	fi0 = 0.0;
-	fiL = 0.0;
+	xL = 1.0;//m
+	fi0 = 1.0;
+	fiL = 1.0;
 
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
@@ -61,7 +55,7 @@ bool DifusaoComGeracao1D::Resolver()
 	return calculou;
 }
 
-bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
+bool DifusaoComGeracaoEDifusividadeVariavel1D::SolicitarDadosDeEntrada()
 {
 	bool errou = false;
 
@@ -86,7 +80,7 @@ bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void DifusaoComGeracao1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
+void DifusaoComGeracaoEDifusividadeVariavel1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
@@ -100,33 +94,35 @@ void DifusaoComGeracao1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico,
 	CondicaoDeContornoDireita = new CondicaoDeContorno();
 	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::primeiroTipo;
 	CondicaoDeContornoDireita->fi = fiL;
-
 }
 
-void DifusaoComGeracao1D::IniciarVariavelNumerica(double* fiNumerico)
+void DifusaoComGeracaoEDifusividadeVariavel1D::IniciarVariavelNumerica(double* fiNumerico)
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
-		fiNumerico[i] = 0.0;
+		fiNumerico[i] = 1.0;
 	}
 }
 
-bool DifusaoComGeracao1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
+bool DifusaoComGeracaoEDifusividadeVariavel1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
 {
-	for(int i=1;i<=numeroDeVolumes+1;i++)
+	for(int i=1;i<=numeroDeVolumes;i++)
 	{
-		fiAnalitico[i] = -qK*x[i]*x[i]/2 + 2.5*x[i];
+		fiAnalitico[i] = 0.0;
 	}
 
 	return true;
 }
 
-double DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D::Calcular(double fi)
+double DifusaoComGeracaoEDifusividadeVariavel1D::TermoDifusivoDifusaoComGeracaoEDifusividadeVariavel1D::Calcular(double fi)
 {
-	return 1.0;
+	double difusividade = 10*exp(-1.0/(0.1+fi));
+	return difusividade;
 }
 
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi)
+double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Calcular(double fi)
 {
-	return qK;
+	double termoFonte = -( 1 + fi*fi);
+	return termoFonte;
 }
+

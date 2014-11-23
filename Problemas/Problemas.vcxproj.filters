@@ -27,6 +27,15 @@
     <ClCompile Include="Problema.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DifusaoComGeracaoEDifusividadeVariavel1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConducaoPino1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Problema1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DifusaoComGeracao1D.h">
@@ -36,6 +45,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Problema.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DifusaoComGeracaoEDifusividadeVariavel1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConducaoPino1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Problema1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

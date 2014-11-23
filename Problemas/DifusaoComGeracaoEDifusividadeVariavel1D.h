@@ -1,39 +1,36 @@
-#ifndef DifusaoComGeracao1D_h
-#define DifusaoComGeracao1D_h
+#ifndef DifusaoComGeracaoEDifusividadeVariavel1D_h
+#define DifusaoComGeracaoEDifusividadeVariavel1D_h
 
 #include "Problema1D.h"
 
-
-class DifusaoComGeracao1D :
+class DifusaoComGeracaoEDifusividadeVariavel1D :
 	public Problema1D
 {
 private:
-	
-	double qK;
 	
 	bool SolicitarDadosDeEntrada();
 	void ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico) override;
 	void IniciarVariavelNumerica(double* fiNumerico) override;
 	bool CalcularSolucaoAnalitica(double* x, double* fiAnalitico) override;
-
+	
 public:
 	bool Resolver() override;
 
-	class TermoDifusivoDifusaoComGeracao1D:
+	class TermoDifusivoDifusaoComGeracaoEDifusividadeVariavel1D:
 		public Difusividade
 	{
 	public:
 		double Calcular(double fi) override;
 	};
 
-	class TermoFonteDifusaoComGeracao1D:
+	class TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D:
 		public TermoFonte
 	{
 	public:
-		double qK;
 		double Calcular(double fi) override;
 	};
 	
+
 };
 
 #endif
