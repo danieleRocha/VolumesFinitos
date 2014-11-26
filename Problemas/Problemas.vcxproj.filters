@@ -30,10 +30,10 @@
     <ClCompile Include="DifusaoComGeracaoEDifusividadeVariavel1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ConducaoPino1D.cpp">
+    <ClCompile Include="Problema1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Problema1D.cpp">
+    <ClCompile Include="ConducaoSuperficieEstendida1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,10 +50,10 @@
     <ClInclude Include="DifusaoComGeracaoEDifusividadeVariavel1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConducaoPino1D.h">
+    <ClInclude Include="Problema1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Problema1D.h">
+    <ClInclude Include="ConducaoSuperficieEstendida1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

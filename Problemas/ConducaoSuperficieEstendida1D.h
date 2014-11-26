@@ -1,14 +1,14 @@
-#ifndef ConducaoPino1D_h
-#define ConducaoPino1D_h
+#ifndef ConducaoSuperficieEstendida1D_h
+#define ConducaoSuperficieEstendida1D_h
 
 #include "Problema1D.h"
 
-class ConducaoPino1D :
+class ConducaoSuperficieEstendida1D :
 	public Problema1D
 {
 private:
-	
-	double h,D,P,k,Ac,TiInfinito,TBase;
+	int numeroDoTipoDeSuperficie;
+	double h,D,w,t,P,k,Ac,TiInfinito,TBase;
 	double  m2;
 	
 	bool SolicitarDadosDeEntrada();
@@ -20,22 +20,27 @@ private:
 public:
 	bool Resolver() override;
 
-	class TermoDifusivoConducaoPino1D:
+	class TermoDifusivoConducaoSuperficieEstendida1D:
 		public Difusividade
 	{
 	public:
 		double Calcular(double fi) override;
 	};
 
-	class TermoFonteConducaoPino1D:
+	class TermoFonteConducaoSuperficieEstendida1D:
 		public TermoFonte
 	{
 	public:
 		double m2;
 		double Calcular(double fi) override;
+		double Derivada(double fi) override;
 	};
 	
 };
+
+static int nSuperficiesDisponiveis = 2;
+static char *nomeSuperficies[] = {"Pinos  [0]",
+                                  "Aletas [1]"};
 
 #endif
 

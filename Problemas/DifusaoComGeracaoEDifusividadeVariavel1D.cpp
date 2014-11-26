@@ -7,6 +7,9 @@ bool DifusaoComGeracaoEDifusividadeVariavel1D::Resolver()
 	calculou =  SolicitarDadosDeEntrada();
 	if(!calculou) return calculou;
 
+	TermoFonte->Linear = false;
+	TermoFonte->Decrescente = true;
+
 	x0 = 0.0;//m
 	xL = 1.0;//m
 	fi0 = 1.0;
@@ -126,3 +129,7 @@ double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDif
 	return termoFonte;
 }
 
+double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Derivada(double fi)
+{
+	return -2*fi;
+}

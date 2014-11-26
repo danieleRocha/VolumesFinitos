@@ -24,9 +24,9 @@ Problema* FabricaDeProblemas::CriarProblema(int indice)
 		}
 	case 2:
 		{
-			ConducaoPino1D* conducao = new ConducaoPino1D();
-			conducao->Difusividade = new ConducaoPino1D::TermoDifusivoConducaoPino1D();
-			conducao->TermoFonte = new ConducaoPino1D::TermoFonteConducaoPino1D();
+			ConducaoSuperficieEstendida1D* conducao = new ConducaoSuperficieEstendida1D();
+			conducao->Difusividade = new ConducaoSuperficieEstendida1D::TermoDifusivoConducaoSuperficieEstendida1D();
+			conducao->TermoFonte = new ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D();
 			
 			return conducao;
 		}

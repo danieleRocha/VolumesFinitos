@@ -28,6 +28,7 @@ public:
 	{
 	public:
 		double Calcular(double fi) override;
+		double Derivada(double fi) override;
 	};
 	
 

@@ -130,11 +130,25 @@ void VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 		aE[i] = taue/dx;
 		aP[i] = 0;
 
-		//Para termo fonte linearizado(S(fi)=Sc+Sp*fip)
-		//crescente com fi --> Sp=0 e Sc = S(fi*)...então b=b+Sc*dx
-
-		b[i] = termoFonte->Calcular(fi[i+1])*dx;
-
+		if(termoFonte->Linear)
+		{
+			b[i] = termoFonte->Calcular(fi[i+1])*dx;
+		}
+		else //Para termo fonte linearizado(S(fi)=Sc+Sp*fip)
+		{
+			//decrescente com fi --> Sp=dS/dfi|fi* e Sc = S(fi*)-fi*dS/dfi|fi*
+			//...então b=b+(S(fi)-(fi*)*(dS/dfi|fi*))*dx e aP = aP - dx*(dS/dfi|fi*)
+			if(termoFonte->Decrescente)
+			{
+				b[i] = (termoFonte->Calcular(fi[i+1])-termoFonte->Derivada(fi[i+1])*fi[i+1])*dx;
+				aP[i] = aP[i] - (termoFonte->Derivada(fi[i+1]))*dx;
+			}
+			else //crescente com fi --> Sp=0 e Sc = S(fi*)...então b=b+Sc*dx
+			{
+				b[i] = termoFonte->Calcular(fi[i+1])*dx;
+			}
+		}
+		
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
@@ -150,12 +164,11 @@ void VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 			}
 			else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceitoTipo)
 			{
-				double fiw = ((tauw/dxmais)*fi[i+1]+condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
+				b[i] = b[i] + ((tauw/dxmais)*condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
 					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
 
-				double qw = condicaoDeContornoDireita->alfa*(condicaoDeContornoDireita->fiInfinito-fiw);
-
-				b[i] = b[i] + qw;
+				aP[i] = aP[i] + ((tauw/dxmais)*condicaoDeContornoEsquerda->alfa)/
+					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
 
 			}
 
@@ -175,12 +188,11 @@ void VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 			}
 			else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceitoTipo)
 			{
-				double fie = ((taue/dxmenos)*fi[i+1]+condicaoDeContornoDireita->alfa*condicaoDeContornoDireita->fiInfinito)/
+				b[i] = b[i] + ((taue/dxmenos)*condicaoDeContornoDireita->alfa*condicaoDeContornoDireita->fiInfinito)/
 					(condicaoDeContornoDireita->alfa+(taue/dxmenos));
 
-				double qe = condicaoDeContornoDireita->alfa*(fie-condicaoDeContornoDireita->fiInfinito);
-
-				b[i] = b[i] - qe;
+				aP[i] = aP[i] + ((taue/dxmenos)*condicaoDeContornoDireita->alfa)/
+					(condicaoDeContornoDireita->alfa+(taue/dxmenos));
 			}
 
 		}

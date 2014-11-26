@@ -1,26 +1,38 @@
-#include "ConducaoPino1D.h"
+#include "ConducaoSuperficieEstendida1D.h"
 
-bool ConducaoPino1D::Resolver()
+bool ConducaoSuperficieEstendida1D::Resolver()
 {
 	bool calculou = true;
 
 	calculou =  SolicitarDadosDeEntrada();
 	if(!calculou) return calculou;
 
-	L = 0.05; //[m] Comprimento do pino
+	L = 0.05; //[m] Comprimento da superfície estendida
 	h =  5.0; //[W/(m²K)] Coeficiente de convecção
 	D = 0.01; //[m] Diâmetro do pino
-	k = 10.0; //[W/(mK)] Condutividade térmica do pino
+	w =0.01;//[m] Largura da aleta
+	t =0.01;//[m] Altura da aleta
+	k = 10.0; //[W/(mK)] Condutividade térmica do material
 	TiInfinito = 293.0;//[K] Temperatura do ambiente
-	TBase = 373.0;//[K] Temperatura da base do pino
+	TBase = 373.0;//[K] Temperatura da base da superfície estendida
 
-	P=M_PI*D;//m Perímetro do pino
-	Ac = M_PI*D*D/4;// m² Área da seção transversal do pino
+	if(numeroDoTipoDeSuperficie==0)
+	{
+		P=M_PI*D;//m Perímetro do pino
+		Ac = M_PI*D*D/4;// m² Área da seção transversal do pino
+	}
+	else
+	{
+		P=2*w+2*t;//m Perímetro da aleta
+		Ac = w*t;// m² Área da seção transversal da aleta
+	}
 
 	m2 = (h*P)/(k*Ac); //Parâmetro admensional
 	
 	//Passa dados para o objeto TermoFonte
-	(static_cast<TermoFonteConducaoPino1D*>(TermoFonte))->m2 = m2;
+	(static_cast<TermoFonteConducaoSuperficieEstendida1D*>(TermoFonte))->m2 = m2;
+	TermoFonte->Linear = false;
+	TermoFonte->Decrescente = true;
 
 	x0 = 0.0;//m
 	xL = L;//m
@@ -69,10 +81,18 @@ bool ConducaoPino1D::Resolver()
 	return calculou;
 }
 
-bool ConducaoPino1D::SolicitarDadosDeEntrada()
+bool ConducaoSuperficieEstendida1D::SolicitarDadosDeEntrada()
 {
 	bool errou = false;
 
+	cout<<"Digite o número do tipo da superfície estendida(";
+
+	for(int i=0;i<nSuperficiesDisponiveis;i++)
+	{
+		cout<<"\n"<<nomeSuperficies[i];
+	}
+	cout<<"):";
+	cin >>numeroDoTipoDeSuperficie;
 	cout<<"\n\nDigite o número de volumes: ";
 	cin >> numeroDeVolumes;
 	cout<<"Digite o número do método para solução de sistemas lineares(";
@@ -84,6 +104,13 @@ bool ConducaoPino1D::SolicitarDadosDeEntrada()
 	cout<<"):";
 	cin >>numeroDoMetodoParaSistemaLinear;
 
+	if((numeroDoTipoDeSuperficie<0)||(numeroDoTipoDeSuperficie>(nSuperficiesDisponiveis-1)))
+	{
+		cout<<"Atenção: \n"
+			"Número do tipo de superfície inválido. O número do do tipo de superfície deve estar entre 0 e "<<(nSuperficiesDisponiveis-1);
+		errou = true;
+	}
+
 	if((numeroDoMetodoParaSistemaLinear<0)||(numeroDoMetodoParaSistemaLinear>(nMetodosParaSistemasLinearesDisponiveis-1)))
 	{
 		cout<<"Atenção: \n"
@@ -94,7 +121,7 @@ bool ConducaoPino1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void ConducaoPino1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
+void ConducaoSuperficieEstendida1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
@@ -115,7 +142,7 @@ void ConducaoPino1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, doub
 
 }
 
-void ConducaoPino1D::IniciarVariavelNumerica(double* fiNumerico)
+void ConducaoSuperficieEstendida1D::IniciarVariavelNumerica(double* fiNumerico)
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
@@ -123,7 +150,7 @@ void ConducaoPino1D::IniciarVariavelNumerica(double* fiNumerico)
 	}
 }
 
-bool ConducaoPino1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
+bool ConducaoSuperficieEstendida1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
 {
 	double m = pow(m2,0.5);
 
@@ -136,13 +163,17 @@ bool ConducaoPino1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
 	return true;
 }
 
-double ConducaoPino1D::TermoDifusivoConducaoPino1D::Calcular(double fi)
+double ConducaoSuperficieEstendida1D::TermoDifusivoConducaoSuperficieEstendida1D::Calcular(double fi)
 {
 	return 1.0;
 }
 
-double ConducaoPino1D::TermoFonteConducaoPino1D::Calcular(double fi)
+double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Calcular(double fi)
 {
 	return -m2*fi;
 }
 
+double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Derivada(double fi)
+{
+	return -m2;
+}

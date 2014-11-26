@@ -12,6 +12,8 @@ bool DifusaoComGeracao1D::Resolver()
 
 	//Passa dados para o objeto TermoFonte
 	(static_cast<TermoFonteDifusaoComGeracao1D*>(TermoFonte))->qK = qK;
+	TermoFonte->Linear = true;
+	TermoFonte->Decrescente = false;
 
 	x0 = 0.0;//m
 	xL = L;//m
@@ -129,4 +131,9 @@ double DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D::Calcular(double fi
 double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi)
 {
 	return qK;
+}
+
+double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Derivada(double fi)
+{
+	return 0;
 }
