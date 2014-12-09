@@ -40,43 +40,18 @@ bool ConducaoSuperficieEstendida1D::Resolver()
 	
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
-	arquivo = ofstream("resultado.txt");
-	const int n = numeroDeVolumes+2;
-	double* x;
-	double* fiAnalitico;
-	double* fiNumerico;
-	double* desviosRelativos;
-	double* desviosAbsolutos;
+	DefinirArquivo();
+	AlocarMemoria();
 
-#pragma region AlocacaoDeMemoria
-
-	x = static_cast<double*>(malloc(n*sizeof(double)));
-	fiAnalitico = static_cast<double*>(malloc(n*sizeof(double)));
-	fiNumerico = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosRelativos = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosAbsolutos = static_cast<double*>(malloc(n*sizeof(double)));
-
-#pragma endregion 
-
-	calculou = Calcular(x,fiAnalitico,fiNumerico,desviosRelativos,desviosAbsolutos);
+	calculou = Calcular();
 	if(!calculou) return calculou;
 
-	ImprimirResultados(x,fiAnalitico,fiNumerico,desviosRelativos,desviosAbsolutos);
+	ImprimirResultados();
 
 	arquivo<<"\nCalculos finalizados com sucesso.\n\n";
 	cout<<"\nCalculos finalizados com sucesso.\n\n";
 
-#pragma region LiberacaoMemoria
-
-	free(static_cast<void*>(x));
-	free(static_cast<void*>(fiAnalitico));
-	free(static_cast<void*>(fiNumerico));
-	free(static_cast<void*>(desviosRelativos));
-	free(static_cast<void*>(desviosAbsolutos));
-
-	arquivo.close();
-
-#pragma endregion 
+	LiberarMemoria(); 
 
 	return calculou;
 }
@@ -121,11 +96,13 @@ bool ConducaoSuperficieEstendida1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void ConducaoSuperficieEstendida1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
+void ConducaoSuperficieEstendida1D::ObterCondicoesIniciaisEDeContorno()
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
 	fiNumerico[numeroDeVolumes+1] = 62.125;
+	peclet[0] = 0.0;
+	peclet[numeroDeVolumes+1]= 0.0;
 	
 	CondicaoDeContornoEsquerda = new CondicaoDeContorno();
 	CondicaoDeContornoEsquerda->tipo= CondicaoDeContorno::primeiroTipo;
@@ -142,7 +119,7 @@ void ConducaoSuperficieEstendida1D::ObterCondicoesIniciaisEDeContorno(double* fi
 
 }
 
-void ConducaoSuperficieEstendida1D::IniciarVariavelNumerica(double* fiNumerico)
+void ConducaoSuperficieEstendida1D::IniciarVariavelNumerica()
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
@@ -150,7 +127,7 @@ void ConducaoSuperficieEstendida1D::IniciarVariavelNumerica(double* fiNumerico)
 	}
 }
 
-bool ConducaoSuperficieEstendida1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
+bool ConducaoSuperficieEstendida1D::CalcularSolucaoAnalitica()
 {
 	double m = pow(m2,0.5);
 
@@ -176,4 +153,9 @@ double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::C
 double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Derivada(double fi)
 {
 	return -m2;
+}
+
+double ConducaoSuperficieEstendida1D::FluxoMassicoConducaoSuperficieEstendida1D::Calcular()
+{
+	return 0.0;
 }

@@ -11,7 +11,7 @@ Problema* FabricaDeProblemas::CriarProblema(int indice)
 			DifusaoComGeracao1D* difusao = new DifusaoComGeracao1D();
 			difusao->Difusividade = new DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D();
 			difusao->TermoFonte = new DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D();
-			
+			difusao->FluxoMassico = new DifusaoComGeracao1D::FluxoMassicoDifusaoComGeracao1D();
 			return difusao;
 		}
 	case 1:
@@ -19,7 +19,7 @@ Problema* FabricaDeProblemas::CriarProblema(int indice)
 			DifusaoComGeracaoEDifusividadeVariavel1D* difusao = new DifusaoComGeracaoEDifusividadeVariavel1D();
 			difusao->Difusividade = new DifusaoComGeracaoEDifusividadeVariavel1D::TermoDifusivoDifusaoComGeracaoEDifusividadeVariavel1D();
 			difusao->TermoFonte = new DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D();
-			
+			difusao->FluxoMassico=new DifusaoComGeracaoEDifusividadeVariavel1D::FluxoMassicoDifusaoComGeracaoEDifusividadeVariavel1D();
 			return difusao;
 		}
 	case 2:
@@ -27,8 +27,16 @@ Problema* FabricaDeProblemas::CriarProblema(int indice)
 			ConducaoSuperficieEstendida1D* conducao = new ConducaoSuperficieEstendida1D();
 			conducao->Difusividade = new ConducaoSuperficieEstendida1D::TermoDifusivoConducaoSuperficieEstendida1D();
 			conducao->TermoFonte = new ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D();
-			
+			conducao->FluxoMassico = new ConducaoSuperficieEstendida1D::FluxoMassicoConducaoSuperficieEstendida1D();
 			return conducao;
+		}
+	case 3:
+		{
+			ConveccaoDifusao1D* conveccaoDifusao = new ConveccaoDifusao1D();
+			conveccaoDifusao->Difusividade = new ConveccaoDifusao1D::TermoDifusivoConveccaoDifusao1D();
+			conveccaoDifusao->TermoFonte = new ConveccaoDifusao1D::TermoFonteConveccaoDifusao1D();
+			conveccaoDifusao->FluxoMassico = new ConveccaoDifusao1D::FluxoMassicoConveccaoDifusao1D();
+			return conveccaoDifusao;
 		}
 	default:
 		return NULL;

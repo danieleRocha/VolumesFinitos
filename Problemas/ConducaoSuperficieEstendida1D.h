@@ -12,9 +12,9 @@ private:
 	double  m2;
 	
 	bool SolicitarDadosDeEntrada();
-	void ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico) override;
-	void IniciarVariavelNumerica(double* fiNumerico) override;
-	bool CalcularSolucaoAnalitica(double* x, double* fiAnalitico) override;
+	void ObterCondicoesIniciaisEDeContorno() override;
+	void IniciarVariavelNumerica() override;
+	bool CalcularSolucaoAnalitica() override;
 	
 
 public:
@@ -36,6 +36,12 @@ public:
 		double Derivada(double fi) override;
 	};
 	
+	class FluxoMassicoConducaoSuperficieEstendida1D:
+		public FluxoMassico
+	{
+	public:
+		double Calcular() override;
+	};
 };
 
 static int nSuperficiesDisponiveis = 2;

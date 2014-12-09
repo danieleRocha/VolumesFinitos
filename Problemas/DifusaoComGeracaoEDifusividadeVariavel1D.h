@@ -9,9 +9,9 @@ class DifusaoComGeracaoEDifusividadeVariavel1D :
 private:
 	
 	bool SolicitarDadosDeEntrada();
-	void ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico) override;
-	void IniciarVariavelNumerica(double* fiNumerico) override;
-	bool CalcularSolucaoAnalitica(double* x, double* fiAnalitico) override;
+	void ObterCondicoesIniciaisEDeContorno() override;
+	void IniciarVariavelNumerica() override;
+	bool CalcularSolucaoAnalitica() override;
 	
 public:
 	bool Resolver() override;
@@ -31,7 +31,12 @@ public:
 		double Derivada(double fi) override;
 	};
 	
-
+	class FluxoMassicoDifusaoComGeracaoEDifusividadeVariavel1D:
+		public FluxoMassico
+	{
+	public:
+		double Calcular() override;
+	};
 };
 
 #endif

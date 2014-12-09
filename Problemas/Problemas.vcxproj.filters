@@ -36,6 +36,9 @@
     <ClCompile Include="ConducaoSuperficieEstendida1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ConveccaoDifusao1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DifusaoComGeracao1D.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConducaoSuperficieEstendida1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConveccaoDifusao1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

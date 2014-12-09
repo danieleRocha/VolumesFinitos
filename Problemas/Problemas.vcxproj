@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConducaoSuperficieEstendida1D.cpp" />
+    <ClCompile Include="ConveccaoDifusao1D.cpp" />
     <ClCompile Include="DifusaoComGeracao1D.cpp" />
     <ClCompile Include="DifusaoComGeracaoEDifusividadeVariavel1D.cpp" />
     <ClCompile Include="FabricaDeProblemas.cpp" />
@@ -84,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConducaoSuperficieEstendida1D.h" />
+    <ClInclude Include="ConveccaoDifusao1D.h" />
     <ClInclude Include="DifusaoComGeracao1D.h" />
     <ClInclude Include="DifusaoComGeracaoEDifusividadeVariavel1D.h" />
     <ClInclude Include="FabricaDeProblemas.h" />

@@ -1,15 +1,16 @@
-#ifndef DifusaoComGeracao1D_h
-#define DifusaoComGeracao1D_h
+#ifndef ConveccaoDifusao1D_h
+#define ConveccaoDifusao1D_h
 
 #include "Problema1D.h"
 
 
-class DifusaoComGeracao1D :
+class ConveccaoDifusao1D :
 	public Problema1D
 {
 private:
-	
-	double qK;
+	double difusividade;
+	double fluxoMassico;
+	double pecletFixado;
 	
 	bool SolicitarDadosDeEntrada();
 	void ObterCondicoesIniciaisEDeContorno() override;
@@ -19,29 +20,29 @@ private:
 public:
 	bool Resolver() override;
 
-	class TermoDifusivoDifusaoComGeracao1D:
+	class TermoDifusivoConveccaoDifusao1D:
 		public Difusividade
 	{
 	public:
+		double difusividade;
 		double Calcular(double fi) override;
 	};
 
-	class TermoFonteDifusaoComGeracao1D:
+	class TermoFonteConveccaoDifusao1D:
 		public TermoFonte
 	{
 	public:
-		double qK;
 		double Calcular(double fi) override;
 		double Derivada(double fi) override;
 	};
 	
-	class FluxoMassicoDifusaoComGeracao1D:
+	class FluxoMassicoConveccaoDifusao1D:
 		public FluxoMassico
 	{
 	public:
+		double fluxoMassico;
 		double Calcular() override;
 	};
 };
 
 #endif
-

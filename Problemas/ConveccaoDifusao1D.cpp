@@ -1,6 +1,6 @@
-#include "DifusaoComGeracao1D.h"
+#include "ConveccaoDifusao1D.h"
 
-bool DifusaoComGeracao1D::Resolver()
+bool ConveccaoDifusao1D::Resolver()
 {
 	bool calculou = true;
 
@@ -8,19 +8,22 @@ bool DifusaoComGeracao1D::Resolver()
 	if(!calculou) return calculou;
 
 	L = 1.0;//m
-	qK =  5.0;//K/m²
-
-	//Passa dados para o objeto TermoFonte
-	(static_cast<TermoFonteDifusaoComGeracao1D*>(TermoFonte))->qK = qK;
+	
 	TermoFonte->Linear = true;
 	TermoFonte->Decrescente = false;
 
 	x0 = 0.0;//m
 	xL = L;//m
-	fi0 = 0.0;
+	fi0 = 1.0;
 	fiL = 0.0;
 
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
+
+	difusividade =0.1; //Fixada
+	fluxoMassico = 0.1;
+
+	(static_cast<TermoDifusivoConveccaoDifusao1D*>(Difusividade))->difusividade = difusividade;
+	(static_cast<FluxoMassicoConveccaoDifusao1D*>(FluxoMassico))->fluxoMassico = fluxoMassico;
 
 	DefinirArquivo();
 	AlocarMemoria();
@@ -38,12 +41,20 @@ bool DifusaoComGeracao1D::Resolver()
 	return calculou;
 }
 
-bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
+bool ConveccaoDifusao1D::SolicitarDadosDeEntrada()
 {
 	bool errou = false;
 
 	cout<<"\n\nDigite o número de volumes: ";
 	cin >> numeroDeVolumes;
+	cout<<"\n\nDigite o número do tipo de discretização do termo convectivo: ";
+	for(int i=0;i<numeroDeMetodosDeDiscretizacao;i++)
+	{
+		cout<<"\n"<<nomeMetodosDeDiscretizacao[i];
+	}
+
+	cin>> tipoDiscretizacaoTermoConvectivo;
+
 	cout<<"Digite o número do método para solução de sistemas lineares(";
 
 	for(int i=0;i<nMetodosParaSistemasLinearesDisponiveis;i++)
@@ -60,10 +71,17 @@ bool DifusaoComGeracao1D::SolicitarDadosDeEntrada()
 		errou = true;
 	}
 
+	if((tipoDiscretizacaoTermoConvectivo<0)||(tipoDiscretizacaoTermoConvectivo>(numeroDeMetodosDeDiscretizacao-1)))
+	{
+		cout<<"Atenção: \n"
+			"Número do método inválido. O número do método de discretização do termo convectivo deve estar entre 0 e "<<(numeroDeMetodosDeDiscretizacao-1);
+		errou = true;
+	}
+
 	return !errou;
 }
 
-void DifusaoComGeracao1D::ObterCondicoesIniciaisEDeContorno()
+void ConveccaoDifusao1D::ObterCondicoesIniciaisEDeContorno()
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
@@ -82,7 +100,7 @@ void DifusaoComGeracao1D::ObterCondicoesIniciaisEDeContorno()
 
 }
 
-void DifusaoComGeracao1D::IniciarVariavelNumerica()
+void ConveccaoDifusao1D::IniciarVariavelNumerica()
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
@@ -90,32 +108,32 @@ void DifusaoComGeracao1D::IniciarVariavelNumerica()
 	}
 }
 
-bool DifusaoComGeracao1D::CalcularSolucaoAnalitica()
+bool ConveccaoDifusao1D::CalcularSolucaoAnalitica()
 {
 	for(int i=1;i<=numeroDeVolumes+1;i++)
 	{
-		fiAnalitico[i] = -qK*x[i]*x[i]/2 + 2.5*x[i];
+		fiAnalitico[i] = ((exp(fluxoMassico*x[i]/difusividade)-1)/(exp(fluxoMassico*L/difusividade)-1))*(fiL-fi0)+fi0;
 	}
 
 	return true;
 }
 
-double DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D::Calcular(double fi)
+double ConveccaoDifusao1D::TermoDifusivoConveccaoDifusao1D::Calcular(double fi)
 {
-	return 1.0;
+	return difusividade;
 }
 
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi)
-{
-	return qK;
-}
-
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Derivada(double fi)
-{
-	return 0;
-}
-
-double DifusaoComGeracao1D::FluxoMassicoDifusaoComGeracao1D::Calcular()
+double ConveccaoDifusao1D::TermoFonteConveccaoDifusao1D::Calcular(double fi)
 {
 	return 0.0;
+}
+
+double ConveccaoDifusao1D::TermoFonteConveccaoDifusao1D::Derivada(double fi)
+{
+	return 0.0;
+}
+
+double ConveccaoDifusao1D::FluxoMassicoConveccaoDifusao1D::Calcular()
+{
+	return fluxoMassico;
 }

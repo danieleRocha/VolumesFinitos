@@ -17,43 +17,18 @@ bool DifusaoComGeracaoEDifusividadeVariavel1D::Resolver()
 
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
-	arquivo = ofstream("resultado.txt");
-	const int n = numeroDeVolumes+2;
-	double* x;
-	double* fiAnalitico;
-	double* fiNumerico;
-	double* desviosRelativos;
-	double* desviosAbsolutos;
-
-#pragma region AlocacaoDeMemoria
-
-	x = static_cast<double*>(malloc(n*sizeof(double)));
-	fiAnalitico = static_cast<double*>(malloc(n*sizeof(double)));
-	fiNumerico = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosRelativos = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosAbsolutos = static_cast<double*>(malloc(n*sizeof(double)));
-
-#pragma endregion 
-
-	calculou = Calcular(x,fiAnalitico,fiNumerico,desviosRelativos,desviosAbsolutos);
+	DefinirArquivo();
+	AlocarMemoria();
+	
+	calculou = Calcular();
 	if(!calculou) return calculou;
 
-	ImprimirResultados(x,fiAnalitico,fiNumerico,desviosRelativos,desviosAbsolutos);
+	ImprimirResultados();
 
 	arquivo<<"\nCalculos finalizados com sucesso.\n\n";
 	cout<<"\nCalculos finalizados com sucesso.\n\n";
 
-#pragma region LiberacaoMemoria
-
-	free(static_cast<void*>(x));
-	free(static_cast<void*>(fiAnalitico));
-	free(static_cast<void*>(fiNumerico));
-	free(static_cast<void*>(desviosRelativos));
-	free(static_cast<void*>(desviosAbsolutos));
-
-	arquivo.close();
-
-#pragma endregion 
+    LiberarMemoria();
 
 	return calculou;
 }
@@ -83,12 +58,14 @@ bool DifusaoComGeracaoEDifusividadeVariavel1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void DifusaoComGeracaoEDifusividadeVariavel1D::ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)
+void DifusaoComGeracaoEDifusividadeVariavel1D::ObterCondicoesIniciaisEDeContorno()
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
 	fiAnalitico[numeroDeVolumes+1] = fiL;
 	fiNumerico[numeroDeVolumes+1] = fiL;
+	peclet[0] = 0.0;
+	peclet[numeroDeVolumes+1]= 0.0;
 
 	CondicaoDeContornoEsquerda = new CondicaoDeContorno();
 	CondicaoDeContornoEsquerda->tipo= CondicaoDeContorno::primeiroTipo;
@@ -99,7 +76,7 @@ void DifusaoComGeracaoEDifusividadeVariavel1D::ObterCondicoesIniciaisEDeContorno
 	CondicaoDeContornoDireita->fi = fiL;
 }
 
-void DifusaoComGeracaoEDifusividadeVariavel1D::IniciarVariavelNumerica(double* fiNumerico)
+void DifusaoComGeracaoEDifusividadeVariavel1D::IniciarVariavelNumerica()
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
@@ -107,7 +84,7 @@ void DifusaoComGeracaoEDifusividadeVariavel1D::IniciarVariavelNumerica(double* f
 	}
 }
 
-bool DifusaoComGeracaoEDifusividadeVariavel1D::CalcularSolucaoAnalitica(double* x, double* fiAnalitico)
+bool DifusaoComGeracaoEDifusividadeVariavel1D::CalcularSolucaoAnalitica()
 {
 	for(int i=1;i<=numeroDeVolumes;i++)
 	{
@@ -132,4 +109,9 @@ double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDif
 double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Derivada(double fi)
 {
 	return -2*fi;
+}
+
+double DifusaoComGeracaoEDifusividadeVariavel1D::FluxoMassicoDifusaoComGeracaoEDifusividadeVariavel1D::Calcular()
+{
+	return 0.0;
 }

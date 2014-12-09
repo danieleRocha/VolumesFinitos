@@ -103,149 +103,13 @@ liberarMemoria:
 }
 
 
-//bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,int numeroDeVolumes,double dx, double* fi,double* peclet,
-//								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-//								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
-//{
-//
-//	//Malha uniforme
-//	double dxmais = dx/2;
-//	double dxmenos = dx/2;
-//	double fluxo = fluxoMassico->Calcular();
-//
-//#pragma region ContrucaoMalha
-//
-//	for(int i=0;i<numeroDeVolumes;i++)
-//	{
-//		double taue;
-//		double tauw;
-//		double difusiv = difusividade->Calcular(fi[i+1]);
-//
-//		if(i==0)//Condição de contorno à esquerda
-//			tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[i+1],difusividade); 
-//		else
-//			tauw = CalcularTauw(dxmenos,dxmais,dx,fi[i],fi[i+1],difusividade); 
-//
-//		if(i==(numeroDeVolumes-1))//Condição de contorno à direita
-//			taue = CalcularTaue(dxmenos,dxmais,dx,condicaoDeContornoDireita->fi,fi[i+1],difusividade);
-//		else
-//			taue = CalcularTaue(dxmenos,dxmais,dx,fi[i+2],fi[i+1],difusividade);
-//
-//		aW[i] = tauw/dx + fluxo*dxmais/dx;
-//		aE[i] = taue/dx - fluxo*dxmenos/dx;
-//		aP[i] = 0.0; 
-//
-//		if(difusiv!=0.0)
-//			peclet[i+1] = (fluxo*dx)/difusiv;
-//		else
-//			peclet[i+1] = 0.0;
-//
-//		if(termoFonte->Linear)
-//		{
-//			b[i] = termoFonte->Calcular(fi[i+1])*dx;
-//		}
-//		else //Para termo fonte linearizado(S(fi)=Sc+Sp*fip)
-//		{
-//			//decrescente com fi --> Sp=dS/dfi|fi* e Sc = S(fi*)-fi*dS/dfi|fi*
-//			//...então b=b+(S(fi)-(fi*)*(dS/dfi|fi*))*dx e aP = aP - dx*(dS/dfi|fi*)
-//			if(termoFonte->Decrescente)
-//			{
-//				b[i] = (termoFonte->Calcular(fi[i+1])-termoFonte->Derivada(fi[i+1])*fi[i+1])*dx;
-//				aP[i] = aP[i] - (termoFonte->Derivada(fi[i+1]))*dx;
-//			}
-//			else //crescente com fi --> Sp=0 e Sc = S(fi*)...então b=b+Sc*dx
-//			{
-//				b[i] = termoFonte->Calcular(fi[i+1])*dx;
-//			}
-//		}
-//		
-//		if(i==0) //Condição de contorno à esquerda
-//		{
-//			aW[i] = 0;
-//			aP[i] = aP[i]+ fluxo;
-//
-//			if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::primeiroTipo) //Validado para convecção
-//			{
-//				aP[i] = aP[i] + (tauw/dxmais);
-//				b[i] = b[i] + (tauw/dxmais + fluxo)*condicaoDeContornoEsquerda->fi;
-//			}
-//			else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo) //Validado para convecção
-//			{
-//				aP[i] = aP[i] - fluxo;
-//				b[i] = b[i] + (1+fluxo/(tauw/dxmais))*condicaoDeContornoEsquerda->fluxo;
-//			}
-//			else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceitoTipo)
-//			{
-//				//Todo: Implementar mudança quando se considera o termo convectivo
-//
-//				b[i] = b[i] + ((tauw/dxmais)*condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
-//					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
-//
-//				aP[i] = aP[i] + ((tauw/dxmais)*condicaoDeContornoEsquerda->alfa)/
-//					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
-//
-//			}
-//
-//		}
-//		else if(i==(numeroDeVolumes-1))//Condição de contorno à direita
-//		{
-//			aE[i] = 0;
-//			aP[i] = aP[i]- fluxo;
-//
-//			if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::primeiroTipo) //Validado para convecção
-//			{
-//				aP[i] = aP[i] + (taue/dxmenos);
-//				b[i] = b[i] + (taue/dxmenos-fluxo)*condicaoDeContornoDireita->fi;
-//			}
-//			else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo) //Validado para convecção
-//			{
-//				aP[i] = aP[i] + fluxo;
-//				b[i] = b[i] + (fluxo/(taue/dxmenos)-1)*condicaoDeContornoDireita->fluxo;
-//			}
-//			else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceitoTipo)
-//			{
-//				//Todo: Implementar mudança quando se considera o termo convectivo
-//
-//				b[i] = b[i] + ((taue/dxmenos)*condicaoDeContornoDireita->alfa*condicaoDeContornoDireita->fiInfinito)/
-//					(condicaoDeContornoDireita->alfa+(taue/dxmenos));
-//
-//				aP[i] = aP[i] + ((taue/dxmenos)*condicaoDeContornoDireita->alfa)/
-//					(condicaoDeContornoDireita->alfa+(taue/dxmenos));
-//			}
-//
-//		}
-//		
-//		aP[i] = aP[i] + aE[i]+aW[i];
-//
-//		/*if(aP[i]>0)
-//		{
-//			if(aE[i]<0) return false;
-//			if(aW[i]<0) return false;
-//		}
-//		else
-//		{
-//			if(aE[i]>0) return false;
-//			if(aW[i]>0) return false;
-//		}*/
-//	}
-//
-//
-//
-//#pragma endregion
-//
-//	return true;
-//
-//}
 
+///Só serve para malha uniforme
 bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,int numeroDeVolumes,double dx, double* fi,double* peclet,
 								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
 								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita,
 								  Discretizacao discretizacaoTermoConvectivo)
 {
-
-	//Todo: Após as validações abaixo, agrupar os dois métodos (upwind e central)
-
-	//Malha uniforme
 	double dxmais = dx/2;
 	double dxmenos = dx/2;
 	double fluxo = fluxoMassico->Calcular();
@@ -268,10 +132,24 @@ bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 		else
 			taue = CalcularTaue(dxmenos,dxmais,dx,fi[i+2],fi[i+1],difusividade);
 
-		aW[i] = tauw/dx + max(0.0,fluxo);
-		aE[i] = taue/dx + max(0.0, -fluxo);
-		aP[i] = 0.0; 
+		aW[i] = tauw/dx;
+		aE[i] = taue/dx;
+		aP[i] = 0.0;
 
+		switch (discretizacaoTermoConvectivo)
+		{
+		case DiferencasCentrais: 
+			aW[i] = aW[i] + fluxo*dxmais/dx;
+			aE[i] = aE[i] - fluxo*dxmenos/dx;
+			break;
+		case Upwind: 
+			aW[i] = aW[i] + max(0.0,fluxo);
+			aE[i] = aE[i] + max(0.0, -fluxo);
+			break;
+		case QUICK: 
+			break;
+
+		}
 
 		if(difusiv!=0.0)
 			peclet[i+1] = (fluxo*dx)/difusiv;
@@ -296,7 +174,7 @@ bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 				b[i] = termoFonte->Calcular(fi[i+1])*dx;
 			}
 		}
-		
+
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
@@ -304,17 +182,46 @@ bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 
 			if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::primeiroTipo) //Validado
 			{
-				aP[i] = aP[i] + (tauw/dxmais) - min(fluxo,0.0);
-				b[i] = b[i] + (tauw/dxmais + max(0.0,fluxo))*condicaoDeContornoEsquerda->fi;
+				aP[i] = aP[i] + (tauw/dxmais);
+				b[i] = b[i] + (tauw/dxmais)*condicaoDeContornoEsquerda->fi;
+
+				switch (discretizacaoTermoConvectivo)
+				{
+				case DiferencasCentrais: 
+					b[i] = b[i] + (fluxo)*condicaoDeContornoEsquerda->fi;
+					break;
+				case Upwind: 
+					aP[i] = aP[i] - min(fluxo,0.0);
+					b[i] = b[i] + (max(0.0,fluxo))*condicaoDeContornoEsquerda->fi;
+					break;
+				case QUICK: 
+					break;
+
+				}
 			}
 			else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)//Todo:Validar
 			{
 				aP[i] = aP[i] - fluxo;
-				b[i] = b[i] + (1+ (max(fluxo,0.0))/(tauw/dxmais))*condicaoDeContornoEsquerda->fluxo;
+				b[i] = b[i] + (1)*condicaoDeContornoEsquerda->fluxo;
+
+
+				switch (discretizacaoTermoConvectivo)
+				{
+				case DiferencasCentrais: 
+					b[i] = b[i] + (fluxo/(tauw/dxmais))*condicaoDeContornoEsquerda->fluxo;
+					break;
+				case Upwind: 
+					b[i] = b[i] + ((max(fluxo,0.0))/(tauw/dxmais))*condicaoDeContornoEsquerda->fluxo;
+					break;
+				case QUICK: 
+					break;
+
+				}
+
 			}
 			else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceitoTipo)
 			{
-				//Todo: Implementar mudança quando se considera o termo convectivo
+				//Todo: Implementar mudança quando se considera o termo convectivo e os diferentes métodos
 
 				b[i] = b[i] + ((tauw/dxmais)*condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
 					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
@@ -332,17 +239,44 @@ bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 
 			if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::primeiroTipo) //Validado
 			{
-				aP[i] = aP[i] + (taue/dxmenos) - min(0.0, -fluxo);
-				b[i] = b[i] + (taue/dxmenos + max(0.0,-fluxo))*condicaoDeContornoDireita->fi;
+				aP[i] = aP[i]  + (taue/dxmenos);
+				b[i] = b[i] + (taue/dxmenos)*condicaoDeContornoDireita->fi;
+
+				switch (discretizacaoTermoConvectivo)
+				{
+				case DiferencasCentrais: 
+					b[i] = b[i] + (-fluxo)*condicaoDeContornoDireita->fi;
+					break;
+				case Upwind: 
+					aP[i] = aP[i] - min(0.0, -fluxo);
+					b[i] = b[i] + (max(0.0,-fluxo))*condicaoDeContornoDireita->fi;
+					break;
+				case QUICK: 
+					break;
+
+				}
 			}
 			else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)//Todo:Validar
 			{
 				aP[i] = aP[i] + fluxo;
-				b[i] = b[i] + (-(max(-fluxo,0.0))/(taue/dxmenos)-1)*condicaoDeContornoDireita->fluxo;
+				b[i] = b[i] + (-1)*condicaoDeContornoDireita->fluxo;
+
+				switch (discretizacaoTermoConvectivo)
+				{
+				case DiferencasCentrais: 
+					b[i] = b[i] + (fluxo/(taue/dxmenos))*condicaoDeContornoDireita->fluxo;
+					break;
+				case Upwind: 
+					b[i] = b[i] + (-(max(-fluxo,0.0))/(taue/dxmenos))*condicaoDeContornoDireita->fluxo;
+					break;
+				case QUICK: 
+					break;
+
+				}
 			}
 			else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceitoTipo)
 			{
-				//Todo: Implementar mudança quando se considera o termo convectivo
+				//Todo: Implementar mudança quando se considera o termo convectivo e os diferentes métodos
 
 				b[i] = b[i] + ((taue/dxmenos)*condicaoDeContornoDireita->alfa*condicaoDeContornoDireita->fiInfinito)/
 					(condicaoDeContornoDireita->alfa+(taue/dxmenos));
@@ -352,18 +286,18 @@ bool VolumesFinitos::DefinirMalha(double* aP, double* aE, double* aW,double* b,i
 			}
 
 		}
-		
+
 		aP[i] = aP[i] + aE[i]+aW[i];
 
 		/*if(aP[i]>0)
 		{
-			if(aE[i]<0) return false;
-			if(aW[i]<0) return false;
+		if(aE[i]<0) return false;
+		if(aW[i]<0) return false;
 		}
 		else
 		{
-			if(aE[i]>0) return false;
-			if(aW[i]>0) return false;
+		if(aE[i]>0) return false;
+		if(aW[i]>0) return false;
 		}*/
 	}
 
@@ -394,7 +328,7 @@ void VolumesFinitos::AjustarCondicoesDeContorno(int numeroDeVolumes,double dx, d
 		double tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[1],difusividade); 
 
 		double fiw = ((tauw/dxmais)*fi[1]+condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
-					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
+			(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
 
 		fi[0] = fiw;
 	}

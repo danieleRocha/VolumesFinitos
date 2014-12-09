@@ -21,19 +21,31 @@ public:
 	double x0,xL,L,fi0,fiL,dx;
 	int numeroDeVolumes;
 	int numeroDoMetodoParaSistemaLinear;
+	int tipoDiscretizacaoTermoConvectivo;
+
+	double* x;
+	double* fiAnalitico;
+	double* fiNumerico;
+	double* peclet;
+	double* desviosRelativos;
+	double* desviosAbsolutos;
+
 	ofstream arquivo;
 	CondicaoDeContorno* CondicaoDeContornoEsquerda;
 	CondicaoDeContorno* CondicaoDeContornoDireita;
 
-	bool Calcular(double* x, double* fiAnalitico, double* fiNumerico,double* desviosRelativos,double* desviosAbsolutos);
+	bool Calcular();
 	void ImprimirMensagemDeErro(int numeroDoErro);
-	bool CalcularVariavelIndependenteEspacoX(double* x);
-	virtual bool CalcularSolucaoAnalitica(double* x, double* fiAnalitico)=0;
-	virtual void IniciarVariavelNumerica(double* fiNumerico)=0;
-	virtual void ObterCondicoesIniciaisEDeContorno(double* fiAnalitico, double* fiNumerico)=0;
-	bool CalcularSolucaoNumerica(double* fiNumerico);
-	bool CalcularDesvios(double* fiAnalitico, double* fiNumerico,double* desviosRelativos,double* desviosAbsolutos);
-	void ImprimirResultados(double* x, double* fiAnalitico, double* fiNumerico, double* desviosRelativos,double* desviosAbsolutos);
+	bool CalcularVariavelIndependenteEspacoX();
+	virtual bool CalcularSolucaoAnalitica()=0;
+	virtual void IniciarVariavelNumerica()=0;
+	virtual void ObterCondicoesIniciaisEDeContorno()=0;
+	bool CalcularSolucaoNumerica();
+	bool CalcularDesvios();
+	void ImprimirResultados();
+	void AlocarMemoria();
+	void DefinirArquivo();
+	void LiberarMemoria();
 };
 
 #endif 

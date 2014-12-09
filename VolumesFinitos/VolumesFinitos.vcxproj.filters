@@ -30,6 +30,9 @@
     <ClCompile Include="CondicaoDeContorno.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FluxoMassico.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VolumesFinitos.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CondicaoDeContorno.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluxoMassico.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
