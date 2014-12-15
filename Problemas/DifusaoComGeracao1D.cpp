@@ -14,6 +14,7 @@ bool DifusaoComGeracao1D::Resolver()
 	(static_cast<TermoFonteDifusaoComGeracao1D*>(TermoFonte))->qK = qK;
 	TermoFonte->Linear = true;
 	TermoFonte->Decrescente = false;
+	tipoDiscretizacaoTermoConvectivo = 0;
 
 	x0 = 0.0;//m
 	xL = L;//m
@@ -105,12 +106,12 @@ double DifusaoComGeracao1D::TermoDifusivoDifusaoComGeracao1D::Calcular(double fi
 	return 1.0;
 }
 
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi)
+double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Calcular(double fi,double x)
 {
 	return qK;
 }
 
-double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Derivada(double fi)
+double DifusaoComGeracao1D::TermoFonteDifusaoComGeracao1D::Derivada(double fi,double x)
 {
 	return 0;
 }

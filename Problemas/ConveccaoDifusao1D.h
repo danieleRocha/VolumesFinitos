@@ -32,8 +32,8 @@ public:
 		public TermoFonte
 	{
 	public:
-		double Calcular(double fi) override;
-		double Derivada(double fi) override;
+		double Calcular(double fi,double x) override;
+		double Derivada(double fi,double x) override;
 	};
 	
 	class FluxoMassicoConveccaoDifusao1D:

@@ -9,6 +9,7 @@ bool DifusaoComGeracaoEDifusividadeVariavel1D::Resolver()
 
 	TermoFonte->Linear = false;
 	TermoFonte->Decrescente = true;
+	tipoDiscretizacaoTermoConvectivo = 0;
 
 	x0 = 0.0;//m
 	xL = 1.0;//m
@@ -100,13 +101,13 @@ double DifusaoComGeracaoEDifusividadeVariavel1D::TermoDifusivoDifusaoComGeracaoE
 	return difusividade;
 }
 
-double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Calcular(double fi)
+double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Calcular(double fi,double x)
 {
 	double termoFonte = -( 1 + fi*fi);
 	return termoFonte;
 }
 
-double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Derivada(double fi)
+double DifusaoComGeracaoEDifusividadeVariavel1D::TermoFonteDifusaoComGeracaoEDifusividadeVariavel1D::Derivada(double fi,double x)
 {
 	return -2*fi;
 }

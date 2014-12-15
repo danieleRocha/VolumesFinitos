@@ -96,7 +96,7 @@ bool Problema1D::CalcularVariavelIndependenteEspacoX()
 
 bool Problema1D::CalcularSolucaoNumerica()
 {
-	return VolumesFinitos::ResolverRegimePermanente1D(numeroDeVolumes,dx,fiNumerico,peclet,
+	return VolumesFinitos::ResolverRegimePermanente1D(numeroDeVolumes,dx,x,fiNumerico,peclet,
 		numeroDoMetodoParaSistemaLinear,this->Difusividade,this->FluxoMassico,this->TermoFonte,
 		this->CondicaoDeContornoEsquerda,this->CondicaoDeContornoDireita,static_cast<VolumesFinitos::Discretizacao>(tipoDiscretizacaoTermoConvectivo));
 }

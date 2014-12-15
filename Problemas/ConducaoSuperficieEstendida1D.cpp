@@ -33,6 +33,7 @@ bool ConducaoSuperficieEstendida1D::Resolver()
 	(static_cast<TermoFonteConducaoSuperficieEstendida1D*>(TermoFonte))->m2 = m2;
 	TermoFonte->Linear = false;
 	TermoFonte->Decrescente = true;
+	tipoDiscretizacaoTermoConvectivo = 0;
 
 	x0 = 0.0;//m
 	xL = L;//m
@@ -113,7 +114,7 @@ void ConducaoSuperficieEstendida1D::ObterCondicoesIniciaisEDeContorno()
 	CondicaoDeContornoDireita->fi = 62.125;*/
 
 	CondicaoDeContornoDireita = new CondicaoDeContorno();
-	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::terceitoTipo;
+	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::terceiroTipo;
 	CondicaoDeContornoDireita->alfa = h/k;
 	CondicaoDeContornoDireita->fiInfinito = 0.0; //Para cálculo adimensional -->fi = (T - Tinfinito)
 
@@ -145,12 +146,12 @@ double ConducaoSuperficieEstendida1D::TermoDifusivoConducaoSuperficieEstendida1D
 	return 1.0;
 }
 
-double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Calcular(double fi)
+double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Calcular(double fi,double x)
 {
 	return -m2*fi;
 }
 
-double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Derivada(double fi)
+double ConducaoSuperficieEstendida1D::TermoFonteConducaoSuperficieEstendida1D::Derivada(double fi,double x)
 {
 	return -m2;
 }

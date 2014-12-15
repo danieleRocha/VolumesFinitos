@@ -10,7 +10,7 @@ public:
 	{
 		primeiroTipo,
 		segundoTipo,
-		terceitoTipo
+		terceiroTipo
 	};
 
 	virtual ~CondicaoDeContorno();

@@ -80,6 +80,7 @@
     <ClCompile Include="DifusaoComGeracao1D.cpp" />
     <ClCompile Include="DifusaoComGeracaoEDifusividadeVariavel1D.cpp" />
     <ClCompile Include="FabricaDeProblemas.cpp" />
+    <ClCompile Include="PoluentesChamine1D.cpp" />
     <ClCompile Include="Problema.cpp" />
     <ClCompile Include="Problema1D.cpp" />
   </ItemGroup>
@@ -89,6 +90,7 @@
     <ClInclude Include="DifusaoComGeracao1D.h" />
     <ClInclude Include="DifusaoComGeracaoEDifusividadeVariavel1D.h" />
     <ClInclude Include="FabricaDeProblemas.h" />
+    <ClInclude Include="PoluentesChamine1D.h" />
     <ClInclude Include="Problema.h" />
     <ClInclude Include="Problema1D.h" />
   </ItemGroup>

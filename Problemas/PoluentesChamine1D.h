@@ -1,52 +1,48 @@
-#ifndef ConducaoSuperficieEstendida1D_h
-#define ConducaoSuperficieEstendida1D_h
+#ifndef PoluentesChamine1D_h
+#define PoluentesChamine1D_h
 
 #include "Problema1D.h"
 
-class ConducaoSuperficieEstendida1D :
+
+class PoluentesChamine1D :
 	public Problema1D
 {
 private:
-	int numeroDoTipoDeSuperficie;
-	double h,D,w,t,P,k,Ac,TiInfinito,TBase;
-	double  m2;
+	double difusividade;
+	double fluxoMassico;
+	double pecletFixado;
 	
 	bool SolicitarDadosDeEntrada();
 	void ObterCondicoesIniciaisEDeContorno() override;
 	void IniciarVariavelNumerica() override;
 	bool CalcularSolucaoAnalitica() override;
-	
 
 public:
 	bool Resolver() override;
 
-	class TermoDifusivoConducaoSuperficieEstendida1D:
+	class TermoDifusivoPoluentesChamine1D:
 		public Difusividade
 	{
 	public:
+		double difusividade;
 		double Calcular(double fi) override;
 	};
 
-	class TermoFonteConducaoSuperficieEstendida1D:
+	class TermoFontePoluentesChamine1D:
 		public TermoFonte
 	{
 	public:
-		double m2;
 		double Calcular(double fi,double x) override;
 		double Derivada(double fi,double x) override;
 	};
 	
-	class FluxoMassicoConducaoSuperficieEstendida1D:
+	class FluxoMassicoPoluentesChamine1D:
 		public FluxoMassico
 	{
 	public:
+		double fluxoMassico;
 		double Calcular() override;
 	};
 };
 
-static int nSuperficiesDisponiveis = 2;
-static char *nomeSuperficies[] = {"Pinos  [0]",
-                                  "Aletas [1]"};
-
 #endif
-

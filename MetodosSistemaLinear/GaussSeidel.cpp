@@ -7,7 +7,7 @@ bool GaussSeidel::Resolver(SistemaLinear sistema,string &mensagem)
 	int i = 0;
 	int j = 0;
 	int nIteracoes = 0;
-	int niteracoesMaximo = 50;
+	int niteracoesMaximo = 500;
 	double erroMaximo = 100;
 
 	double* delta;

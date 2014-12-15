@@ -39,6 +39,9 @@
     <ClCompile Include="ConveccaoDifusao1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PoluentesChamine1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DifusaoComGeracao1D.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConveccaoDifusao1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PoluentesChamine1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

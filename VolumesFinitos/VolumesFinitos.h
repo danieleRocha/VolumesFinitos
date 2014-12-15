@@ -20,21 +20,32 @@ public:
 	{
 		DiferencasCentrais,
 		Upwind,
-		QUICK
+		QUICK,
+		DiferencasCentraisDeferredCorrection
 	};
 
 	static double CalcularTauw(double dxmenos, double dxmais, double dx, double fiW,double fiP,
 		Difusividade* difusividade);
 	static double CalcularTaue(double dxmenos, double dxmais, double dx, double fiE,double fiP,
 		Difusividade* difusividade);
-	static bool DefinirMalha(double* aP, double* aE, double* aW,double* b,int numeroDeVolumes,double dx,
-		double* fi,double* peclet, double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-		CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita,
-		Discretizacao discretizacaoTermoConvectivo);
+
+	static bool DefinirMalhaUpwind(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,
+		double* x,double* fi,double* peclet, double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+		CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita);
+	static bool DefinirMalhaDiferencasCentrais(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,
+		double* x,double* fi,double* peclet, double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+		CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita);
+	static bool DefinirMalhaQuick(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,
+		double* x,double* fi,double* peclet, double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+		CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita);
+	static bool DefinirMalhaDiferencasCentraisDeferredCorrection(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,
+		double* x,double* fi,double* peclet, double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+		CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita);
+	
 	static void AjustarCondicoesDeContorno(int numeroDeVolumes, double dx, double* fi, Difusividade* difusividade,
 		CondicaoDeContorno* condicaoDeContornoEsquerda, CondicaoDeContorno* condicaoDeContornoDireita);
-	static bool ResolverSistemaLinear(double* fi,double* aP, double* aE, double* aW, double* b, int numeroDeVolumes,int numeroDoMetodoParaSistemaLinear);
-	static bool ResolverRegimePermanente1D(int numeroDeVolumes,double dx,double* fi,double* peclet,int numeroDoMetodoParaSistemaLinear,
+	static bool ResolverSistemaLinear(double* fi,double* aP, double* aE,double* aEE, double* aW, double* aWW, double* b, int numeroDeVolumes,int numeroDoMetodoParaSistemaLinear);
+	static bool ResolverRegimePermanente1D(int numeroDeVolumes,double dx,double* x,double* fi,double* peclet,int numeroDoMetodoParaSistemaLinear,
 		Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,CondicaoDeContorno* condicaoDeContornoEsquerda,
 		CondicaoDeContorno* condicaoDeContornoDireita, Discretizacao discretizacaoTermoConvectivo);
 	
@@ -42,7 +53,8 @@ public:
 
 #endif
 
-static const int numeroDeMetodosDeDiscretizacao = 3;
-static const char *nomeMetodosDeDiscretizacao[] = {"Diferenças Centrais [0]",
-                                             "Upwind              [1]",
-                                             "QUICK               [2]"};
+static const int numeroDeMetodosDeDiscretizacao = 4;
+static const char *nomeMetodosDeDiscretizacao[] = {"Diferenças Centrais                     [0]",
+                                                   "Upwind                                  [1]",
+                                                   "QUICK                                   [2]",
+                                                   "Diferenças Centrais Deferred Correction [3]"};

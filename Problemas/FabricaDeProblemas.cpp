@@ -38,6 +38,14 @@ Problema* FabricaDeProblemas::CriarProblema(int indice)
 			conveccaoDifusao->FluxoMassico = new ConveccaoDifusao1D::FluxoMassicoConveccaoDifusao1D();
 			return conveccaoDifusao;
 		}
+	case 4:
+		{
+			PoluentesChamine1D* poluentes = new PoluentesChamine1D();
+			poluentes->Difusividade = new PoluentesChamine1D::TermoDifusivoPoluentesChamine1D();
+			poluentes->TermoFonte = new PoluentesChamine1D::TermoFontePoluentesChamine1D();
+			poluentes->FluxoMassico = new PoluentesChamine1D::FluxoMassicoPoluentesChamine1D();
+			return poluentes;
+		}
 	default:
 		return NULL;
 		

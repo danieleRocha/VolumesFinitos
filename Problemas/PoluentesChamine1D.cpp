@@ -1,13 +1,13 @@
-#include "ConveccaoDifusao1D.h"
+#include "PoluentesChamine1D.h"
 
-bool ConveccaoDifusao1D::Resolver()
+bool PoluentesChamine1D::Resolver()
 {
 	bool calculou = true;
 
 	calculou =  SolicitarDadosDeEntrada();
 	if(!calculou) return calculou;
 
-	L = 1.0;//m
+	L = 6.0;//m
 	
 	TermoFonte->Linear = true;
 	TermoFonte->Decrescente = false;
@@ -15,16 +15,15 @@ bool ConveccaoDifusao1D::Resolver()
 	x0 = 0.0;//m
 	xL = L;//m
 	fi0 = 0.0;
-	fiL = 1.0;
+	fiL = 2.0;
 
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
-	difusividade = 0.1; //Fixada
-	fluxoMassico = -0.5;
-	
-	
-	(static_cast<TermoDifusivoConveccaoDifusao1D*>(Difusividade))->difusividade = difusividade;
-	(static_cast<FluxoMassicoConveccaoDifusao1D*>(FluxoMassico))->fluxoMassico = fluxoMassico;
+	difusividade =2.0; //Fixada
+	fluxoMassico = -3.0;
+
+	(static_cast<TermoDifusivoPoluentesChamine1D*>(Difusividade))->difusividade = difusividade;
+	(static_cast<FluxoMassicoPoluentesChamine1D*>(FluxoMassico))->fluxoMassico = fluxoMassico;
 
 	DefinirArquivo();
 	AlocarMemoria();
@@ -42,7 +41,7 @@ bool ConveccaoDifusao1D::Resolver()
 	return calculou;
 }
 
-bool ConveccaoDifusao1D::SolicitarDadosDeEntrada()
+bool PoluentesChamine1D::SolicitarDadosDeEntrada()
 {
 	bool errou = false;
 
@@ -82,7 +81,7 @@ bool ConveccaoDifusao1D::SolicitarDadosDeEntrada()
 	return !errou;
 }
 
-void ConveccaoDifusao1D::ObterCondicoesIniciaisEDeContorno()
+void PoluentesChamine1D::ObterCondicoesIniciaisEDeContorno()
 {
 	fiAnalitico[0] = fi0;
 	fiNumerico[0] = fi0;
@@ -92,8 +91,8 @@ void ConveccaoDifusao1D::ObterCondicoesIniciaisEDeContorno()
 	peclet[numeroDeVolumes+1]= 0.0;
 
 	CondicaoDeContornoEsquerda = new CondicaoDeContorno();
-	CondicaoDeContornoEsquerda->tipo= CondicaoDeContorno::primeiroTipo;
-	CondicaoDeContornoEsquerda->fi = fi0;
+	CondicaoDeContornoEsquerda->tipo= CondicaoDeContorno::segundoTipo;
+	CondicaoDeContornoEsquerda->fluxo = -2.0;
 
 	CondicaoDeContornoDireita = new CondicaoDeContorno();
 	CondicaoDeContornoDireita->tipo= CondicaoDeContorno::primeiroTipo;
@@ -101,7 +100,7 @@ void ConveccaoDifusao1D::ObterCondicoesIniciaisEDeContorno()
 
 }
 
-void ConveccaoDifusao1D::IniciarVariavelNumerica()
+void PoluentesChamine1D::IniciarVariavelNumerica()
 {
 	for (int i = 1; i <= numeroDeVolumes; i++)
 	{
@@ -109,32 +108,33 @@ void ConveccaoDifusao1D::IniciarVariavelNumerica()
 	}
 }
 
-bool ConveccaoDifusao1D::CalcularSolucaoAnalitica()
+bool PoluentesChamine1D::CalcularSolucaoAnalitica()
 {
 	for(int i=1;i<=numeroDeVolumes+1;i++)
 	{
-		fiAnalitico[i] = ((exp(fluxoMassico*x[i]/difusividade)-1)/(exp(fluxoMassico*L/difusividade)-1))*(fiL-fi0)+fi0;
+		fiAnalitico[i] = 0.0;
 	}
 
 	return true;
 }
 
-double ConveccaoDifusao1D::TermoDifusivoConveccaoDifusao1D::Calcular(double fi)
+double PoluentesChamine1D::TermoDifusivoPoluentesChamine1D::Calcular(double fi)
 {
 	return difusividade;
 }
 
-double ConveccaoDifusao1D::TermoFonteConveccaoDifusao1D::Calcular(double fi,double x)
+double PoluentesChamine1D::TermoFontePoluentesChamine1D::Calcular(double fi,double x)
+{
+	double valor = x*cos(M_PI*x);
+	return valor;
+}
+
+double PoluentesChamine1D::TermoFontePoluentesChamine1D::Derivada(double fi,double x)
 {
 	return 0.0;
 }
 
-double ConveccaoDifusao1D::TermoFonteConveccaoDifusao1D::Derivada(double fi,double x)
-{
-	return 0.0;
-}
-
-double ConveccaoDifusao1D::FluxoMassicoConveccaoDifusao1D::Calcular()
+double PoluentesChamine1D::FluxoMassicoPoluentesChamine1D::Calcular()
 {
 	return fluxoMassico;
 }
