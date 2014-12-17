@@ -33,6 +33,12 @@
     <ClCompile Include="FluxoMassico.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CondicaoDeContornoDinamica.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FluxoMassicoVariavel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VolumesFinitos.h">
@@ -48,6 +54,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FluxoMassico.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CondicaoDeContornoDinamica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluxoMassicoVariavel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

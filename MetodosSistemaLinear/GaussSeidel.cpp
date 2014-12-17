@@ -1,6 +1,6 @@
 #include "GaussSeidel.h"
 
-bool GaussSeidel::Resolver(SistemaLinear sistema,string &mensagem) 
+bool GaussSeidel::Resolver(SistemaLinear1D sistema,string &mensagem) 
 {
 	bool calculou=true;
 	

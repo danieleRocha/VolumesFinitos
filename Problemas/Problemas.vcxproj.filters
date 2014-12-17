@@ -42,6 +42,12 @@
     <ClCompile Include="PoluentesChamine1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Problema2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConveccaoDifusaoTransiente2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DifusaoComGeracao1D.h">
@@ -66,6 +72,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PoluentesChamine1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Problema2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConveccaoDifusaoTransiente2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

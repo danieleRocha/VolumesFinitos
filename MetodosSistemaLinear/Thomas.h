@@ -1,14 +1,14 @@
 #ifndef Thomas_h
 #define Thomas_h
 
-#include "MetodoParaSistemaLinear.h"
+#include "MetodoParaSistemaLinear1D.h"
 #include <istream>
 
 class Thomas :
-	public MetodoParaSistemaLinear
+	public MetodoParaSistemaLinear1D
 {
 public:
-	bool Resolver(SistemaLinear sistema, string &mensagem) override;
+	bool Resolver(SistemaLinear1D sistema, string &mensagem) override;
 };
 
 #endif 

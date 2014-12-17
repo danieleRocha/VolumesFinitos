@@ -2,7 +2,7 @@
 #ifndef FabricaDeMetodosParaSistemaLinear_h
 #define FabricaDeMetodosParaSistemaLinear_h
 
-#include "MetodoParaSistemaLinear.h"
+#include "MetodoParaSistemaLinear1D.h"
 #include "GaussSeidel.h"
 #include "Thomas.h"
 
@@ -11,7 +11,7 @@
 static class FabricaDeMetodosParaSistemaLinear
 {
 public:
-	static MetodoParaSistemaLinear *CriarMetodo(int indice);
+	static MetodoParaSistemaLinear1D *CriarMetodo(int indice);
 	
 };
 

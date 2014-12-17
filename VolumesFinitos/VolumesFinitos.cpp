@@ -1,6 +1,7 @@
 #include "VolumesFinitos.h"
 
 
+
 bool VolumesFinitos::ResolverRegimePermanente1D(int numeroDeVolumes,double dx,double* x,double* fi,double* peclet,int numeroDoMetodoParaSistemaLinear,
 												Difusividade* difusividade,FluxoMassico* fluxoMassico, TermoFonte* termoFonte,
 												CondicaoDeContorno* condicaoDeContornoEsquerda,
@@ -25,6 +26,7 @@ bool VolumesFinitos::ResolverRegimePermanente1D(int numeroDeVolumes,double dx,do
 	double* aW;
 	double* aWW;
 	double* b;
+	double* resposta;
 
 #pragma region AlocacaoDeMemoria
 
@@ -37,6 +39,7 @@ bool VolumesFinitos::ResolverRegimePermanente1D(int numeroDeVolumes,double dx,do
 	aW = static_cast<double*>(malloc(numeroDeVolumes*sizeof(double)));
 	aWW = static_cast<double*>(malloc(numeroDeVolumes*sizeof(double)));
 	b = static_cast<double*>(malloc(numeroDeVolumes*sizeof(double)));
+	resposta = static_cast<double*>(malloc(numeroDeVolumes*sizeof(double)));
 
 #pragma endregion 
 
@@ -60,30 +63,35 @@ bool VolumesFinitos::ResolverRegimePermanente1D(int numeroDeVolumes,double dx,do
 		{
 		case DiferencasCentrais: 
 			calculou = DefinirMalhaDiferencasCentrais(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
-			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 			break;
 		case Upwind: 
 			calculou = DefinirMalhaUpwind(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
-			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 			break;
 		case QUICK: 
 			calculou = DefinirMalhaQuick(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
-			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 			break;
 		case DiferencasCentraisDeferredCorrection: 
 			calculou = DefinirMalhaDiferencasCentraisDeferredCorrection(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
-			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 			break;
 		default: 
 			return false;
 		}
 
 
-		
+		if(!calculou) goto liberarMemoria;
+
+		calculou = CalculadoraSistemaLinear1D::ResolverSistemaLinear(resposta,aP,aE,aEE,aW,aWW,b,numeroDeVolumes,numeroDoMetodoParaSistemaLinear);
 
 		if(!calculou) goto liberarMemoria;
 
-		calculou = ResolverSistemaLinear(fi,aP,aE,aEE,aW,aWW,b,numeroDeVolumes,numeroDoMetodoParaSistemaLinear);
+		for (int i = 0; i < numeroDeVolumes; i++)
+		{
+			fi[i+1] = resposta[i];
+		}
 
 		AjustarCondicoesDeContorno(numeroDeVolumes,dx,fi,difusividade,condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 
@@ -124,16 +132,194 @@ liberarMemoria:
 	free(static_cast<void*>(aW));
 	free(static_cast<void*>(aWW));
 	free(static_cast<void*>(b));
+	free(static_cast<void*>(resposta));
 
 #pragma endregion
 
 	return calculou;
 }
 
+bool VolumesFinitos::ResolverRegimePermanente2D(int numeroDeVolumesX, double dx, double* x, int numeroDeVolumesY, double dy,
+												double* y, double dt, double** fi, double** peclet,
+												Difusividade* difusividade, FluxoMassicoVariavel* fluxoMassico, TermoFonte* termoFonte, 
+												CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita, 
+												CondicaoDeContorno* condicaoDeContornoInferior,CondicaoDeContorno* condicaoDeContornoSuperior,
+												Discretizacao discretizacaoTermoConvectivo)
+{
+	bool calculou = true;
+
+	//Parâmetros das Iterações do Coeficiente de Difusão
+	double** fiInstanteAnterior;
+	double** fiIteracaoAnterior;
+	double** delta;
+	double erroMaximo = 100;
+	double deltaPermitido = 0.01; //%
+	int iteracao = 1;
+	int numeroMaximoIteracoes = 100;
+
+	//Parâmetros da malha
+	double** aP;
+	double** aE;
+	double** aW;
+	double** aN;
+	double** aS;
+	double** b;
+	double** resposta;
+
+#pragma region AlocacaoDeMemoria
+
+	fiInstanteAnterior = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	fiIteracaoAnterior = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	delta = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aP = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aE = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aW = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aN = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aS = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	b = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	resposta = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+
+	for (int i=0; i<numeroDeVolumesY; i++)
+	{
+		fiInstanteAnterior[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		fiIteracaoAnterior[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		delta[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aP[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aE[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aW[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aN[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aS[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		b[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		resposta[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+	}
+
+#pragma endregion 
+
+#pragma region Calculo
+
+	for(int i = 0;i<numeroDeVolumesY;i++)
+	{
+		for(int j = 0;j<numeroDeVolumesX;j++)
+		{
+			fiInstanteAnterior[i][j] = fi[i+1][j+1];
+		}
+	}
+
+	//Iteraçoes do cálculo iterativo da difusividade e termo fonte (se houver)
+	while((erroMaximo>deltaPermitido)&&(iteracao<numeroMaximoIteracoes))
+	{
+		erroMaximo = 0.0;
+		for(int i = 0;i<numeroDeVolumesY;i++)
+		{
+			for(int j = 0;j<numeroDeVolumesX;j++)
+			{
+				fiIteracaoAnterior[i][j] = fi[i+1][j+1];
+				resposta[i][j] = fi[i+1][j+1];
+			}
+		}
+
+		switch (discretizacaoTermoConvectivo)
+		{
+		case DiferencasCentrais: 
+			calculou = DefinirMalhaDiferencasCentrais(aP,aE,aW,aN,aS,b,numeroDeVolumesX,dx,x,numeroDeVolumesY,dy,y,dt,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita,condicaoDeContornoSuperior,condicaoDeContornoInferior);
+			break;
+			/*case Upwind: 
+			calculou = DefinirMalhaUpwind(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
+			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+			break;
+			case DiferencasCentraisDeferredCorrection: 
+			calculou = DefinirMalhaDiferencasCentraisDeferredCorrection(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
+			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+			break;*/
+		default: 
+			return false;
+		}
+
+
+		if(!calculou) goto liberarMemoria;
+
+		//Só está funcionando para mesmo número de volumes em x e y!!!!!!!!!
+		calculou = CalculadoraSistemaLinear2D::ResolverSistemaLinear(numeroDeVolumesX,aP,aE,aW,aN,aS,b,resposta);
+
+		if(!calculou) goto liberarMemoria;
+
+		for (int i = 0; i < numeroDeVolumesY; i++)
+		{
+			for (int j = 0; j < numeroDeVolumesX; j++)
+			{
+				fi[i+1][j+1] = resposta[i][j];
+			}
+		}
+
+		AjustarCondicoesDeContorno(numeroDeVolumesX,numeroDeVolumesY,x,dx,dy,fi,difusividade,condicaoDeContornoEsquerda,
+			condicaoDeContornoDireita,condicaoDeContornoInferior,condicaoDeContornoSuperior);
+
+		//houveErro = (*metodosBloco[0])(numeroDePontos,aP,aE,aW,aN,aS,c,incognitas);
+
+		if(!calculou) goto liberarMemoria;
+
+		for(int i = 0;i<numeroDeVolumesY;i++)
+		{
+			for(int j = 0;j<numeroDeVolumesX;j++)
+			{
+				delta[i][j] = 100*(fiIteracaoAnterior[i][j]-fi[i+1][j+1])/fi[i+1][j+1];
+
+				if(erroMaximo<fabs(delta[i][j]))
+					erroMaximo = fabs(delta[i][j]);
+			}
+		}
+
+		iteracao = iteracao + 1;
+	}
+
+	if(iteracao>numeroMaximoIteracoes)
+	{
+		calculou = false;
+		goto liberarMemoria;
+	}
+
+#pragma endregion 
+
+liberarMemoria:
+
+
+#pragma region LiberacaoMemoria
+
+	fiInstanteAnterior = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	fiIteracaoAnterior = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	delta = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aP = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aE = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aW = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aN = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	aS = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	b = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+	resposta = static_cast<double**>(malloc(numeroDeVolumesY*sizeof(double)));
+
+
+	for (int i=0; i<numeroDeVolumesY; i++)
+	{
+		fiInstanteAnterior[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		fiIteracaoAnterior[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		delta[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aP[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aE[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aW[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aN[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		aS[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		b[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+		resposta[i]=static_cast<double*>(malloc(numeroDeVolumesX*sizeof(double)));
+	}
+
+#pragma endregion
+
+	return calculou;
+}
 
 bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,double* x, double* fi,double* peclet,
-								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
+													double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+													CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
 {
 
 	//Malha uniforme
@@ -188,7 +374,7 @@ bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double* aP, double* aE,doubl
 				b[i] = termoFonte->Calcular(fi[i+1],x[i+1])*dx;
 			}
 		}
-		
+
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
@@ -248,18 +434,18 @@ bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double* aP, double* aE,doubl
 		{
 			aP[i] = aP[i] + 2*fluxo*(dxmais/dx) - 2*fluxo*(dxmenos/dx);
 		}
-		
+
 		aP[i] = aP[i] + aE[i]+aW[i];
 
 		/*if(aP[i]>0)
 		{
-			if(aE[i]<0) return false;
-			if(aW[i]<0) return false;
+		if(aE[i]<0) return false;
+		if(aW[i]<0) return false;
 		}
 		else
 		{
-			if(aE[i]>0) return false;
-			if(aW[i]>0) return false;
+		if(aE[i]>0) return false;
+		if(aW[i]>0) return false;
 		}*/
 	}
 
@@ -271,9 +457,338 @@ bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double* aP, double* aE,doubl
 
 }
 
+bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double** aP, double** aE, double** aW, double** aN, double** aS, 
+													double** b, int numeroDeVolumesX, double dx, double* x, 
+													int numeroDeVolumesY, double dy, double* y, double dt, double** fi, 
+													double** peclet, double** fiInstanteAnterior, Difusividade* difusividade,
+													FluxoMassicoVariavel* fluxoMassico, TermoFonte* termoFonte,
+													CondicaoDeContorno* condicaoDeContornoEsquerda,
+													CondicaoDeContorno* condicaoDeContornoDireita, CondicaoDeContorno* condicaoDeContornoSuperior, 
+													CondicaoDeContorno* condicaoDeContornoInferior)
+{
+	//Malha uniforme
+	double dxmais = dx/2;
+	double dxmenos = dx/2;
+	double dymais = dy/2;
+	double dymenos = dy/2;
+
+
+#pragma region ContrucaoMalha
+
+	for(int i=0;i<numeroDeVolumesY;i++)
+	{
+		double yn = y[i+2];
+		double ys = x[i];
+
+		double fluxoN = fluxoMassico->CalcularY(yn);
+		double fluxoS = fluxoMassico->CalcularY(ys);
+
+		for(int j=0;j<numeroDeVolumesX;j++)
+		{
+			double xe = x[j+2];
+			double xw = x[j];
+
+			double fluxoE = fluxoMassico->CalcularX(xe);
+			double fluxoW = fluxoMassico->CalcularX(xw);
+
+			double taue;
+			double tauw;
+			double taun;
+			double taus;
+
+			double aEstrela;
+			double fiPEstrela;
+			double sp;
+
+			double difusiv = difusividade->Calcular(fi[i+1][j+1]);
+
+			if(j==0)//Condição de contorno à esquerda
+				tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[i+1][j+1],difusividade); 
+			else
+				tauw = CalcularTauw(dxmenos,dxmais,dx,fi[i+1][j],fi[i+1][j+1],difusividade); 
+
+			if(j==(numeroDeVolumesX-1))//Condição de contorno à direita
+				taue = CalcularTaue(dxmenos,dxmais,dx,condicaoDeContornoDireita->fi,fi[i+1][j+1],difusividade);
+			else
+				taue = CalcularTaue(dxmenos,dxmais,dx,fi[i+1][j+2],fi[i+1][j+1],difusividade);
+
+			if(i==0)//Condição de contorno à inferior
+				taus = CalcularTaus(dymenos,dymais,dy,condicaoDeContornoInferior->fi,fi[i+1][j+1],difusividade); 
+			else
+				taus = CalcularTaus(dymenos,dymais,dy,fi[i][j+1],fi[i+1][j+1],difusividade); 
+
+			if(i==(numeroDeVolumesY-1))//Condição de contorno superior
+				taun = CalcularTaun(dymenos,dymais,dy,condicaoDeContornoSuperior->fi,fi[i+1][j+1],difusividade);
+			else
+				taun = CalcularTaun(dymenos,dymais,dy,fi[i+2][j+1],fi[i+1][j+1],difusividade);
+
+
+			aE[i][j] = taue*dy/dx - fluxoE*dy*dxmenos/dx;
+			aW[i][j] = tauw*dy/dx + fluxoW*dy*dxmais/dx;
+			aN[i][j] = taun*dx/dy - fluxoN*dx*dymenos/dy;
+			aS[i][j] = taus*dx/dy + fluxoS*dx*dymais/dy;
+
+			sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+				-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+				+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+				-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+			aEstrela = dx*dy/dt;
+			fiPEstrela = fi[i+1][j+1];
+
+			b[i][j] = aEstrela*fiPEstrela;
+
+			aP[i][j] = 0.0; 
+
+			if(termoFonte->Linear)
+			{
+				b[i][j] = b[i][j]+ termoFonte->Calcular(fi[i+1][j+1],x[j+1])*dx;
+			}
+			else
+			{
+				//Não implementado
+				return false;
+			}
+
+			if((i==0)&&(j==0))//Canto esquerdo inferior
+			{
+				aW[i][j] = 0;
+				aS[i][j] = 0;
+
+				sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+					-fluxoW*dy
+					+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+					-fluxoS*dx;
+
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j]);
+				}
+
+				if((condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo
+						+(fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((i==(numeroDeVolumesY-1))&&(j==0))//Canto esquerdo superior
+			{
+				aW[i][j] = 0;
+				aN[i][j] = 0;
+
+				sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+					-fluxoW*dy
+					+fluxoN*dx
+					-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+				if((condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo
+						+( fluxoN*dx/(taun/dymenos) - dx )*condicaoDeContornoSuperior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((j==(numeroDeVolumesX-1))&&(i==0))//canto direito inferior
+			{
+				aE[i][j] = 0;
+				aS[i][j] = 0;
+
+				sp = fluxoE*dy 
+					-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+					+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+					-fluxoS*dx;
+
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j]);
+				}
+
+				if((condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo
+						+(fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((j==(numeroDeVolumesX-1))&&(i==(numeroDeVolumesY-1)))//canto direito superior
+			{
+				aE[i][j] = 0;
+				aN[i][j] = 0;
+
+				sp = fluxoE*dy 
+					-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+					+fluxoN*dx
+					-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+				if((condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo
+						+ ( fluxoN*dx/(taun/dymenos) - dx )*condicaoDeContornoSuperior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if(j==0) //Condição de contorno à esquerda
+			{
+				aW[i][j] = 0;
+				sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+					-fluxoW*dy
+					+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+					-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+				if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo;
+				}
+				else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+
+				}
+
+			}
+			else if(j==(numeroDeVolumesX-1))//Condição de contorno à direita
+			{
+				aE[i][j] = 0;
+
+				sp = fluxoE*dy 
+					-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+					+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+					-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+				if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::primeiroTipo) 
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo;
+				}
+				else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+
+			}
+			else if(i==0) //Condição de contorno inferior
+			{
+				aS[i][j] = 0;
+
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j+1]);
+				}
+
+				if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					b[i][j] = b[i][j] + ( fluxoS*dx + dx*(taus/dymais))*condicaoDeContornoInferior->fi;
+
+					sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+						-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+						+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+						+(taus/dxmais)*dx;
+
+				}
+				else if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + (fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+
+					sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+						-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+						+fluxoN*dx*dymais/dy + fluxoN*dx*dymenos/dy
+						-fluxoS*dx;
+
+				}
+				else if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+
+				}
+
+			}
+			else if(i==(numeroDeVolumesY-1))//Condição de contorno superior
+			{
+				aN[i][j] = 0;
+
+				sp = fluxoE*dy*dxmais/dx + fluxoE*dy*dxmenos/dx 
+					-fluxoW*dy*dxmenos/dx -fluxoW*dy*dxmais/dx
+					+fluxoN*dx
+					-fluxoS*dx*dymenos/dy -fluxoS*dx*dymais/dy;
+
+				if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + ( fluxoN*dx/(taun/dymenos) - dx )*condicaoDeContornoSuperior->fluxo;
+				}
+				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+
+			}
+
+			aP[i][j] = aP[i][j] + aEstrela + aE[i][j] +aW[i][j] + aN[i][j] + aS[i][j] + sp;
+
+			if(aP[i]>0)
+			{
+				if(aE[i]<0) return false;
+				if(aW[i]<0) return false;
+				if(aS[i]<0) return false;
+				if(aN[i]<0) return false;
+			}
+			else
+			{
+				if(aE[i]>0) return false;
+				if(aW[i]>0) return false;
+				if(aS[i]>0) return false;
+				if(aN[i]>0) return false;
+			}
+		}
+	}
+
+
+#pragma endregion
+
+	return true;
+}
+
 bool VolumesFinitos::DefinirMalhaUpwind(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,double* x, double* fi,double* peclet,
-								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
+										double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+										CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
 {
 
 	//Malha uniforme
@@ -328,7 +843,7 @@ bool VolumesFinitos::DefinirMalhaUpwind(double* aP, double* aE,double* aEE, doub
 				b[i] = termoFonte->Calcular(fi[i+1],x[i+1])*dx;
 			}
 		}
-		
+
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
@@ -371,7 +886,7 @@ bool VolumesFinitos::DefinirMalhaUpwind(double* aP, double* aE,double* aEE, doub
 			}
 
 		}
-		
+
 		aP[i] = aP[i] + aE[i]+aW[i];
 
 	}
@@ -385,8 +900,8 @@ bool VolumesFinitos::DefinirMalhaUpwind(double* aP, double* aE,double* aEE, doub
 }
 
 bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,double* x, double* fi,double* peclet,
-								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
+									   double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+									   CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
 {
 
 	//Malha uniforme
@@ -395,13 +910,13 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 	double fluxo = fluxoMassico->Calcular();
 	int alfaE = 1;
 	int alfaW = 1;
-	
+
 	if(fluxo<0)
 	{
 		alfaE = 0;
 		alfaW = 0;
 	}
-	
+
 #pragma region ContrucaoMalha
 
 	for(int i=0;i<numeroDeVolumes;i++)
@@ -409,7 +924,7 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 		double taue;
 		double tauw;
 		double Sp = 0.0;
-		
+
 		double difusiv = difusividade->Calcular(fi[i+1]);
 
 		if(i==0)//Condição de contorno à esquerda
@@ -422,7 +937,7 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 		else
 			taue = CalcularTaue(dxmenos,dxmais,dx,fi[i+2],fi[i+1],difusividade);
 
-		
+
 		aW[i] = tauw/dx + (6.0/8.0)*alfaW*fluxo + (1.0/8.0)*alfaE*fluxo + (3.0/8.0)*(1-alfaW)*fluxo;
 		aE[i] = taue/dx + -(3.0/8.0)*alfaE*fluxo  -(6.0/8.0)*(1-alfaE)*fluxo - (1.0/8.0)*(1-alfaW)*fluxo;
 		aWW[i] = -(1.0/8.0)*alfaW*fluxo;
@@ -453,13 +968,13 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 				b[i] = termoFonte->Calcular(fi[i+1],x[i+1])*dx;
 			}
 		}
-		
+
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
 			aWW[i] = 0.0;
 			aEE[i] = (1-alfaE)*(fluxo/8.0);
-			
+
 			aE[i] = taue/dx + -(3.0/8.0)*fluxo -(1-alfaE)*(3.0/8.0)*fluxo + (1.0/3.0)*(tauw/dx);
 			Sp = (8.0/3.0)*(tauw/dx)+alfaE*(2.0/8.0)*fluxo+fluxo;
 
@@ -481,7 +996,7 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 		else if((i==1)&&(fluxo>0))
 		{
 			aWW[i] = 0.0;
-			
+
 			aW[i] = tauw/dx + (7.0/8.0)*fluxo + (1.0/8.0)*fluxo;
 			aE[i] = taue/dx + -(3.0/8.0)*fluxo;
 
@@ -532,7 +1047,7 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 			aWW[i] = -(1.0/8.0)*alfaW*fluxo;
 			aW[i] = tauw/dx + (3.0/8.0)*fluxo + alfaW*(3.0/8.0)*fluxo + (1.0/3.0)*(taue/dx);
 			Sp = (8.0/3.0)*(taue/dx) - fluxo -(1-alfaW)*(2.0/8.0)*fluxo;
-			
+
 			if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::primeiroTipo) 
 			{
 				b[i] = b[i] + ((8.0/3.0)*(taue/dx) - fluxo -(1-alfaW)*(2.0/8.0)*fluxo)*condicaoDeContornoDireita->fi;
@@ -548,7 +1063,7 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 			}
 
 		}
-		
+
 		aP[i] = aP[i] + aE[i]+aW[i]+aEE[i]+aWW[i]+fluxo-fluxo+Sp;
 
 	}
@@ -562,8 +1077,8 @@ bool VolumesFinitos::DefinirMalhaQuick(double* aP, double* aE,double* aEE, doubl
 }
 
 bool VolumesFinitos::DefinirMalhaDiferencasCentraisDeferredCorrection(double* aP, double* aE,double* aEE, double* aW,double* aWW,double* b,int numeroDeVolumes,double dx,double* x, double* fi,double* peclet,
-								  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
-								  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
+																	  double* fiInstanteAnterior,Difusividade* difusividade,FluxoMassico* fluxoMassico,TermoFonte* termoFonte,
+																	  CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita)
 {
 
 	//Malha uniforme
@@ -622,7 +1137,7 @@ bool VolumesFinitos::DefinirMalhaDiferencasCentraisDeferredCorrection(double* aP
 				b[i] = termoFonte->Calcular(fi[i+1],x[i+1])*dx;
 			}
 		}
-		
+
 		if(i==0) //Condição de contorno à esquerda
 		{
 			aW[i] = 0;
@@ -714,7 +1229,7 @@ void VolumesFinitos::AjustarCondicoesDeContorno(int numeroDeVolumes,double dx, d
 		double tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[1],difusividade); 
 
 		double fiw = ((tauw/dxmais)*fi[1]+condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
-					(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
+			(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
 
 		fi[0] = fiw;
 	}
@@ -736,80 +1251,108 @@ void VolumesFinitos::AjustarCondicoesDeContorno(int numeroDeVolumes,double dx, d
 
 }
 
-bool VolumesFinitos::ResolverSistemaLinear(double* fi,double* aP, double* aE,double* aEE, double* aW,double* aWW,
-										   double* b, int numeroDeVolumes,int numeroDoMetodoParaSistemaLinear)
+void VolumesFinitos::AjustarCondicoesDeContorno(int numeroDeVolumesX,int numeroDeVolumesY,double* x,double dx,double dy,double** fi,
+												Difusividade* difusividade,
+												CondicaoDeContorno* condicaoDeContornoEsquerda,CondicaoDeContorno* condicaoDeContornoDireita,
+												CondicaoDeContorno* condicaoDeContornoInferior,CondicaoDeContorno* condicaoDeContornoSuperior)
 {
-	bool calculou;
-	double** matrizCoeficientes;
 
-#pragma region AlocacaoDeMemoria
+	//Malha uniforme
+	double dxmais = dx/2;
+	double dxmenos = dx/2;
+	double dymais = dy/2;
+	double dymenos = dy/2;
 
-	matrizCoeficientes=static_cast<double**>(malloc(numeroDeVolumes*sizeof(double*)));
-
-	for (int i=0; i<numeroDeVolumes; i++)
+	if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)
 	{
-		matrizCoeficientes[i]=static_cast<double*>(malloc(numeroDeVolumes*sizeof(double)));
-	}
-
-#pragma endregion 
-
-	//cout.precision(4);
-
-	//cout<<"\n\nMatriz: \n\n";
-
-	for (int i = 0; i < numeroDeVolumes; i++)
-	{
-		for (int j = 0; j < numeroDeVolumes; j++)
+		for (int j = 0; j < numeroDeVolumesY+2; j++)
 		{
-			if(i==j)
-				matrizCoeficientes[i][j] = aP[i];
-			else if(j==(i-1))
-				matrizCoeficientes[i][j] = -aW[i];
-			else if(j==(i-2))
-				matrizCoeficientes[i][j] = -aWW[i];
-			else if(j==(i+1))
-				matrizCoeficientes[i][j] = -aE[i];
-			else if(j==(i+2))
-				matrizCoeficientes[i][j] = -aEE[i];
-			else
-				matrizCoeficientes[i][j] = 0.0;
-
-			//cout<<"  "<<matrizCoeficientes[i][j];
+			double tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[j][1],difusividade); 
+			fi[j][0] = (condicaoDeContornoEsquerda->fluxo*dxmais)/tauw+fi[j][1];
 		}
-		//cout<<"          "<<b[i];
-		//cout<<"\n";
+
 	}
-
-	SistemaLinear* sistema = new SistemaLinear(numeroDeVolumes,matrizCoeficientes,b);
-
-	MetodoParaSistemaLinear* metodo =  FabricaDeMetodosParaSistemaLinear::CriarMetodo(numeroDoMetodoParaSistemaLinear);
-
-	string mensagem = "";
-
-	calculou = metodo->Resolver(*sistema,mensagem);
-
-	if(calculou)
+	else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceiroTipo)
 	{
-		for (int i = 0; i < numeroDeVolumes; i++)
+		for (int j = 0; j < numeroDeVolumesY+2; j++)
 		{
-			fi[i+1] = sistema->vetorCoeficientes[i];
+			double tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[j][1],difusividade); 
+			double fiw = ((tauw/dxmais)*fi[j][1]+condicaoDeContornoEsquerda->alfa*condicaoDeContornoEsquerda->fiInfinito)/
+				(condicaoDeContornoEsquerda->alfa+(tauw/dxmais));
+
+			fi[j][0] = fiw;
 		}
 	}
 
-#pragma region LiberacaoMemoria
-
-	for (int i=0; i<numeroDeVolumes; i++)
+	if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)
 	{
-		free(static_cast<void*>(matrizCoeficientes[i]));
+		for (int j = 0; j < numeroDeVolumesY+2; j++)
+		{
+			double taue = CalcularTaue(dxmenos,dxmais,dx,condicaoDeContornoDireita->fi,fi[j][numeroDeVolumesX],difusividade);
+			fi[j][numeroDeVolumesX+1] = fi[j][numeroDeVolumesX]-(condicaoDeContornoDireita->fluxo*dxmenos)/taue;
+		}
+	}
+	else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceiroTipo)
+	{
+		for (int j = 0; j < numeroDeVolumesY+2; j++)
+		{
+			double taue = CalcularTaue(dxmenos,dxmais,dx,condicaoDeContornoDireita->fi,fi[j][numeroDeVolumesX],difusividade);
+			double fie = ((taue/dxmenos)*fi[j][numeroDeVolumesX]+condicaoDeContornoDireita->alfa*condicaoDeContornoDireita->fiInfinito)/
+				(condicaoDeContornoDireita->alfa+(taue/dxmenos));
+
+			fi[j][numeroDeVolumesX+1] = fie;
+		}
+	}
+
+	if(condicaoDeContornoInferior->dinamica)
+	{
+		for (int j = 0; j < numeroDeVolumesX+2; j++)
+		{
+			static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j]);
+
+			if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo)
+			{
+				double taus = CalcularTaus(dymenos,dymais,dy,condicaoDeContornoInferior->fi,fi[1][j],difusividade); 
+				fi[0][j] = (condicaoDeContornoInferior->fluxo*dymais)/taus+fi[1][j];
+			}
+			else if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::terceiroTipo)
+			{
+
+				double taus = CalcularTaus(dymenos,dymais,dy,condicaoDeContornoInferior->fi,fi[1][j],difusividade); 
+				double fis = ((taus/dymais)*fi[1][j]+condicaoDeContornoInferior->alfa*condicaoDeContornoInferior->fiInfinito)/
+					(condicaoDeContornoInferior->alfa+(taus/dymais));
+
+				fi[0][j] = fis;
+
+			}
+		}
+
 
 	}
-	free(static_cast<void*>(matrizCoeficientes));
-
-#pragma endregion 
 
 
-	return calculou;
+	if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo)
+	{
+		for (int j = 0; j < numeroDeVolumesX+2; j++)
+		{
+			double taun = CalcularTaun(dymenos,dymais,dy,condicaoDeContornoSuperior->fi,fi[numeroDeVolumesY][j],difusividade);
+			fi[numeroDeVolumesY+1][j] = fi[numeroDeVolumesY][j]-(condicaoDeContornoSuperior->fluxo*dymenos)/taun;
+		}
+	}
+	else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::terceiroTipo)
+	{
+		for (int j = 0; j < numeroDeVolumesX+2; j++)
+		{
+			double taun = CalcularTaun(dymenos,dymais,dx,condicaoDeContornoSuperior->fi,fi[numeroDeVolumesY][j],difusividade);
+			double fin = ((taun/dymenos)*fi[numeroDeVolumesY][j]+condicaoDeContornoSuperior->alfa*condicaoDeContornoSuperior->fiInfinito)/
+				(condicaoDeContornoSuperior->alfa+(taun/dymenos));
+
+			fi[numeroDeVolumesY+1][j] = fin;
+		}
+	}
+
 }
+
 
 double VolumesFinitos::CalcularTauw(double dxmenos, double dxmais, double dx, double fiW,double fiP,
 									Difusividade* difusividade)
@@ -836,3 +1379,30 @@ double VolumesFinitos::CalcularTaue(double dxmenos, double dxmais, double dx, do
 
 	return taue;
 }
+
+double VolumesFinitos::CalcularTaus(double dymenos, double dymais, double dy, double fiS,double fiP,
+									Difusividade* difusividade)
+{
+	double taus = 0.0;
+	double tauS = difusividade->Calcular(fiS);
+	double tauP =  difusividade->Calcular(fiP);
+
+	if((tauS!=0.0)&&(tauP!=0.0))
+		taus = 1/((dymenos/dy)/tauS + (dymais/dy)/tauP);
+
+	return taus;
+}
+
+double VolumesFinitos::CalcularTaun(double dymenos, double dymais, double dy, double fiN,double fiP,
+									Difusividade* difusividade)
+{
+	double taun = 0.0;
+	double tauN= difusividade->Calcular(fiN);
+	double tauP = difusividade->Calcular(fiP);
+
+	if((tauN!=0.0)&&(tauP!=0.0))
+		taun = 1/((dymenos/dy)/tauP + (dymais/dy)/tauN);
+
+	return taun;
+}
+

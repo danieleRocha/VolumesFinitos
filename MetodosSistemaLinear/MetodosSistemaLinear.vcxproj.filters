@@ -24,13 +24,28 @@
     <ClCompile Include="GaussSeidel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MetodoParaSistemaLinear.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SistemaLinear.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Thomas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SistemaLinear1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetodoParaSistemaLinear1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetodoParaSistemaLinear2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SistemaLinear2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LSOR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CalculadoraSistemaLinear1D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CalculadoraSistemaLinear2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,13 +56,28 @@
     <ClInclude Include="GaussSeidel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MetodoParaSistemaLinear.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SistemaLinear.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Thomas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SistemaLinear1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetodoParaSistemaLinear1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetodoParaSistemaLinear2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SistemaLinear2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LSOR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CalculadoraSistemaLinear1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CalculadoraSistemaLinear2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

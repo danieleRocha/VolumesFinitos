@@ -10,15 +10,17 @@ public:
 	{
 		primeiroTipo,
 		segundoTipo,
-		terceiroTipo
+		terceiroTipo,
 	};
 
 	virtual ~CondicaoDeContorno();
+	
 	Tipo tipo;
 	double fi;
 	double fluxo;
 	double fiInfinito;
 	double alfa;
+	bool dinamica;
 };
 
 #endif

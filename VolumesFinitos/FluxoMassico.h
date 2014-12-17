@@ -6,7 +6,7 @@ class FluxoMassico
 {
 public:
 	virtual ~FluxoMassico();
-	virtual	double Calcular() = 0;
+	virtual	double Calcular();
 	
 };
 

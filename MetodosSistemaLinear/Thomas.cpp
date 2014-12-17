@@ -1,7 +1,7 @@
 #include "Thomas.h"
 
 
-bool Thomas::Resolver(SistemaLinear sistema, string &mensagem)
+bool Thomas::Resolver(SistemaLinear1D sistema, string &mensagem)
 {
 	bool calculou=true;
 

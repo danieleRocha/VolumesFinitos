@@ -1,7 +1,7 @@
-#include "SistemaLinear.h"
+#include "SistemaLinear1D.h"
 
 
-SistemaLinear::SistemaLinear(int dimensaoMatriz, double** matrizDeCoeficientes,double *vetorResposta)
+SistemaLinear1D::SistemaLinear1D(int dimensaoMatriz, double** matrizDeCoeficientes,double *vetorResposta)
 {
 	this->dimensaoMatriz = dimensaoMatriz;
 	this->matrizDeCoeficientes = matrizDeCoeficientes;
@@ -14,6 +14,6 @@ SistemaLinear::SistemaLinear(int dimensaoMatriz, double** matrizDeCoeficientes,d
 	}
 }
 
-SistemaLinear::~SistemaLinear()
+SistemaLinear1D::~SistemaLinear1D()
 {
 }

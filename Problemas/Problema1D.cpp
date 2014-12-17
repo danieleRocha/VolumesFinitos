@@ -41,43 +41,6 @@ bool Problema1D::Calcular()
 	return calculou;
 }
 
-void Problema1D::ImprimirMensagemDeErro(int numeroDoErro)
-{
-	switch(numeroDoErro)
-	{
-	case 1:
-		arquivo<<"Erro: \n"
-			"Não foi possível calcular a variável independente: espaço.\n\n";
-		cout<<"Erro: \n"
-			"Não foi possível calcular a variável independente: espaço.\n\n";
-		break;
-	case 2:
-		arquivo<<"Erro: \n"
-			"Não foi possível calcular a solução analítica.\n\n";
-		cout<<"Erro: \n"
-			"Não foi possível calcular a solução analítica.\n\n";
-		break;
-	case 3:
-		arquivo<<"Erro: \n"
-			"Não foi possível calcular a solução numérica.\n\n";
-		cout<<"Erro: \n"
-			"Não foi possível calcular a solução numérica.\n\n";
-		break;
-	case 4:
-		arquivo<<"Erro: \n"
-			"Não foi possível calcular os desvios dos resultados numéricos em relação aos analíticos.\n\n";
-		cout<<"Erro: \n"
-			"Não foi possível calcular os desvios dos resultados numéricos em relação aos analíticos.\n\n";
-		break;
-	default:
-		arquivo<<"Erro: \n"
-			"Houve um erro no sistema.\n\n";
-		cout<<"Erro: \n"
-			"Houve um erro no sistema.\n\n";
-		break;
-	}
-}
-
 bool Problema1D::CalcularVariavelIndependenteEspacoX()
 {
 	x[0] = x0;
@@ -145,11 +108,6 @@ void Problema1D::AlocarMemoria()
 	peclet = static_cast<double*>(malloc(n*sizeof(double)));
 	desviosRelativos = static_cast<double*>(malloc(n*sizeof(double)));
 	desviosAbsolutos = static_cast<double*>(malloc(n*sizeof(double)));
-}
-
-void Problema1D::DefinirArquivo()
-{
-	arquivo = ofstream("resultado.txt");
 }
 
 void Problema1D::LiberarMemoria()

@@ -74,17 +74,27 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CalculadoraSistemaLinear1D.cpp" />
+    <ClCompile Include="CalculadoraSistemaLinear2D.cpp" />
     <ClCompile Include="FabricaDeMetodosParaSistemaLinear.cpp" />
     <ClCompile Include="GaussSeidel.cpp" />
-    <ClCompile Include="MetodoParaSistemaLinear.cpp" />
-    <ClCompile Include="SistemaLinear.cpp" />
+    <ClCompile Include="LSOR.cpp" />
+    <ClCompile Include="MetodoParaSistemaLinear1D.cpp" />
+    <ClCompile Include="MetodoParaSistemaLinear2D.cpp" />
+    <ClCompile Include="SistemaLinear1D.cpp" />
+    <ClCompile Include="SistemaLinear2D.cpp" />
     <ClCompile Include="Thomas.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CalculadoraSistemaLinear1D.h" />
+    <ClInclude Include="CalculadoraSistemaLinear2D.h" />
     <ClInclude Include="FabricaDeMetodosParaSistemaLinear.h" />
     <ClInclude Include="GaussSeidel.h" />
-    <ClInclude Include="MetodoParaSistemaLinear.h" />
-    <ClInclude Include="SistemaLinear.h" />
+    <ClInclude Include="LSOR.h" />
+    <ClInclude Include="MetodoParaSistemaLinear1D.h" />
+    <ClInclude Include="MetodoParaSistemaLinear2D.h" />
+    <ClInclude Include="SistemaLinear1D.h" />
+    <ClInclude Include="SistemaLinear2D.h" />
     <ClInclude Include="Thomas.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

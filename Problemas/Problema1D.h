@@ -30,21 +30,17 @@ public:
 	double* desviosRelativos;
 	double* desviosAbsolutos;
 
-	ofstream arquivo;
+	
 	CondicaoDeContorno* CondicaoDeContornoEsquerda;
 	CondicaoDeContorno* CondicaoDeContornoDireita;
 
 	bool Calcular();
-	void ImprimirMensagemDeErro(int numeroDoErro);
 	bool CalcularVariavelIndependenteEspacoX();
-	virtual bool CalcularSolucaoAnalitica()=0;
-	virtual void IniciarVariavelNumerica()=0;
-	virtual void ObterCondicoesIniciaisEDeContorno()=0;
+	
 	bool CalcularSolucaoNumerica();
 	bool CalcularDesvios();
 	void ImprimirResultados();
 	void AlocarMemoria();
-	void DefinirArquivo();
 	void LiberarMemoria();
 };
 

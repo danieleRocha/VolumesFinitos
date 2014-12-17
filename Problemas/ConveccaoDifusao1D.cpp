@@ -14,13 +14,13 @@ bool ConveccaoDifusao1D::Resolver()
 
 	x0 = 0.0;//m
 	xL = L;//m
-	fi0 = 0.0;
-	fiL = 1.0;
+	fi0 = 1.0;
+	fiL = 0.0;
 
 	dx= (xL-x0)/(numeroDeVolumes); //Intervalo em x
 
 	difusividade = 0.1; //Fixada
-	fluxoMassico = -0.5;
+	fluxoMassico = 0.1;
 	
 	
 	(static_cast<TermoDifusivoConveccaoDifusao1D*>(Difusividade))->difusividade = difusividade;

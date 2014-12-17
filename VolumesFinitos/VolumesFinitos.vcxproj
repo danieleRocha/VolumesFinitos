@@ -81,15 +81,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CondicaoDeContorno.cpp" />
+    <ClCompile Include="CondicaoDeContornoDinamica.cpp" />
     <ClCompile Include="Difusividade.cpp" />
     <ClCompile Include="FluxoMassico.cpp" />
+    <ClCompile Include="FluxoMassicoVariavel.cpp" />
     <ClCompile Include="TermoFonte.cpp" />
     <ClCompile Include="VolumesFinitos.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CondicaoDeContorno.h" />
+    <ClInclude Include="CondicaoDeContornoDinamica.h" />
     <ClInclude Include="Difusividade.h" />
     <ClInclude Include="FluxoMassico.h" />
+    <ClInclude Include="FluxoMassicoVariavel.h" />
     <ClInclude Include="TermoFonte.h" />
     <ClInclude Include="VolumesFinitos.h" />
   </ItemGroup>

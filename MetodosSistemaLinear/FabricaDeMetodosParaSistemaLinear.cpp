@@ -1,6 +1,6 @@
 #include "FabricaDeMetodosParaSistemaLinear.h"
 
-MetodoParaSistemaLinear* FabricaDeMetodosParaSistemaLinear::CriarMetodo(int indice)
+MetodoParaSistemaLinear1D* FabricaDeMetodosParaSistemaLinear::CriarMetodo(int indice)
 {
 	switch (indice)
 	{
