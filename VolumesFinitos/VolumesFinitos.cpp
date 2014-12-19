@@ -224,11 +224,11 @@ bool VolumesFinitos::ResolverRegimePermanente2D(int numeroDeVolumesX, double dx,
 			calculou = DefinirMalhaDiferencasCentrais(aP,aE,aW,aN,aS,b,numeroDeVolumesX,dx,x,numeroDeVolumesY,dy,y,dt,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
 				condicaoDeContornoEsquerda,condicaoDeContornoDireita,condicaoDeContornoSuperior,condicaoDeContornoInferior);
 			break;
-			/*case Upwind: 
-			calculou = DefinirMalhaUpwind(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
-			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
+			case Upwind: 
+			calculou = DefinirMalhaUpwind(aP,aE,aW,aN,aS,b,numeroDeVolumesX,dx,x,numeroDeVolumesY,dy,y,dt,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
+				condicaoDeContornoEsquerda,condicaoDeContornoDireita,condicaoDeContornoSuperior,condicaoDeContornoInferior);
 			break;
-			case DiferencasCentraisDeferredCorrection: 
+			/*case DiferencasCentraisDeferredCorrection: 
 			calculou = DefinirMalhaDiferencasCentraisDeferredCorrection(aP,aE,aEE,aW,aWW,b,numeroDeVolumes,dx,x,fi,peclet,fiInstanteAnterior,difusividade,fluxoMassico,termoFonte,
 			condicaoDeContornoEsquerda,condicaoDeContornoDireita);
 			break;*/
@@ -752,6 +752,291 @@ bool VolumesFinitos::DefinirMalhaDiferencasCentrais(double** aP, double** aE, do
 				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo) 
 				{
 					b[i][j] = b[i][j] + ( fluxoN*dx/(taun/dymenos) - dx )*condicaoDeContornoSuperior->fluxo;
+				}
+				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+
+			}
+
+			aP[i][j] = aP[i][j] + aEstrela + aE[i][j] +aW[i][j] + aN[i][j] + aS[i][j] + sp;
+
+			if(aP[i]>0)
+			{
+				if(aE[i]<0) return false;
+				if(aW[i]<0) return false;
+				if(aS[i]<0) return false;
+				if(aN[i]<0) return false;
+			}
+			else
+			{
+				if(aE[i]>0) return false;
+				if(aW[i]>0) return false;
+				if(aS[i]>0) return false;
+				if(aN[i]>0) return false;
+			}
+		}
+	}
+
+
+#pragma endregion
+
+	return true;
+}
+
+bool VolumesFinitos::DefinirMalhaUpwind(double** aP, double** aE, double** aW, double** aN, double** aS, 
+													double** b, int numeroDeVolumesX, double dx, double* x, 
+													int numeroDeVolumesY, double dy, double* y, double dt, double** fi, 
+													double** peclet, double** fiInstanteAnterior, Difusividade* difusividade,
+													FluxoMassicoVariavel* fluxoMassico, TermoFonte* termoFonte,
+													CondicaoDeContorno* condicaoDeContornoEsquerda,
+													CondicaoDeContorno* condicaoDeContornoDireita, CondicaoDeContorno* condicaoDeContornoSuperior, 
+													CondicaoDeContorno* condicaoDeContornoInferior)
+{
+	//Malha uniforme
+	double dxmais = dx/2;
+	double dxmenos = dx/2;
+	double dymais = dy/2;
+	double dymenos = dy/2;
+
+
+#pragma region ContrucaoMalha
+
+	for(int i=0;i<numeroDeVolumesY;i++)
+	{
+		double yn = y[i+2];
+		double ys = x[i];
+
+		double fluxoN = fluxoMassico->CalcularY(yn);
+		double fluxoS = fluxoMassico->CalcularY(ys);
+
+		for(int j=0;j<numeroDeVolumesX;j++)
+		{
+			double xe = x[j+2];
+			double xw = x[j];
+
+			double fluxoE = fluxoMassico->CalcularX(xe);
+			double fluxoW = fluxoMassico->CalcularX(xw);
+
+			double taue;
+			double tauw;
+			double taun;
+			double taus;
+
+			double aEstrela;
+			double fiPEstrela;
+			double sp;
+
+			double difusiv = difusividade->Calcular(fi[i+1][j+1]);
+
+			if(j==0)//Condição de contorno à esquerda
+				tauw = CalcularTauw(dxmenos,dxmais,dx,condicaoDeContornoEsquerda->fi,fi[i+1][j+1],difusividade); 
+			else
+				tauw = CalcularTauw(dxmenos,dxmais,dx,fi[i+1][j],fi[i+1][j+1],difusividade); 
+
+			if(j==(numeroDeVolumesX-1))//Condição de contorno à direita
+				taue = CalcularTaue(dxmenos,dxmais,dx,condicaoDeContornoDireita->fi,fi[i+1][j+1],difusividade);
+			else
+				taue = CalcularTaue(dxmenos,dxmais,dx,fi[i+1][j+2],fi[i+1][j+1],difusividade);
+
+			if(i==0)//Condição de contorno à inferior
+				taus = CalcularTaus(dymenos,dymais,dy,condicaoDeContornoInferior->fi,fi[i+1][j+1],difusividade); 
+			else
+				taus = CalcularTaus(dymenos,dymais,dy,fi[i][j+1],fi[i+1][j+1],difusividade); 
+
+			if(i==(numeroDeVolumesY-1))//Condição de contorno superior
+				taun = CalcularTaun(dymenos,dymais,dy,condicaoDeContornoSuperior->fi,fi[i+1][j+1],difusividade);
+			else
+				taun = CalcularTaun(dymenos,dymais,dy,fi[i+2][j+1],fi[i+1][j+1],difusividade);
+
+
+			aE[i][j] = taue*dy/dx + max(0.0,-fluxoE)*dy;
+			aW[i][j] = tauw*dy/dx + max(0.0,fluxoW)*dy;
+			aN[i][j] = taun*dx/dy;
+			aS[i][j] = taus*dx/dy + fluxoS*dx;
+
+			sp = (fluxoE-fluxoW)*dy +(fluxoN-fluxoS)*dx;
+
+			aEstrela = dx*dy/dt;
+			fiPEstrela = fi[i+1][j+1];
+
+			b[i][j] = aEstrela*fiPEstrela;
+
+			aP[i][j] = 0.0; 
+
+			if(termoFonte->Linear)
+			{
+				b[i][j] = b[i][j]+ termoFonte->Calcular(fi[i+1][j+1],x[j+1])*dx;
+			}
+			else
+			{
+				//Não implementado
+				return false;
+			}
+
+			if((i==0)&&(j==0))//Canto esquerdo inferior
+			{
+				aW[i][j] = 0;
+				aS[i][j] = 0;
+
+				
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j]);
+				}
+
+				if((condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo
+						+(fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((i==(numeroDeVolumesY-1))&&(j==0))//Canto esquerdo superior
+			{
+				aW[i][j] = 0;
+				aN[i][j] = 0;
+
+				
+				if((condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo
+						+(-dx)*condicaoDeContornoSuperior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((j==(numeroDeVolumesX-1))&&(i==0))//canto direito inferior
+			{
+				aE[i][j] = 0;
+				aS[i][j] = 0;
+
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j]);
+				}
+
+				if((condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo
+						+(fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if((j==(numeroDeVolumesX-1))&&(i==(numeroDeVolumesY-1)))//canto direito superior
+			{
+				aE[i][j] = 0;
+				aN[i][j] = 0;
+
+				if((condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo)&&
+					(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo))
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo
+						+ (-dx)*condicaoDeContornoSuperior->fluxo;
+				}
+				else
+				{
+					//Não implementado
+					return false;
+				}
+			}
+			else if(j==0) //Condição de contorno à esquerda
+			{
+				aW[i][j] = 0;
+				
+				if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + (fluxoW*dy/(tauw/dxmais) + dy)*condicaoDeContornoEsquerda->fluxo;
+				}
+				else if(condicaoDeContornoEsquerda->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+
+				}
+
+			}
+			else if(j==(numeroDeVolumesX-1))//Condição de contorno à direita
+			{
+				aE[i][j] = 0;
+
+				if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::primeiroTipo) 
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + ( fluxoE*dy/(taue/dxmenos) - dy )*condicaoDeContornoDireita->fluxo;
+				}
+				else if(condicaoDeContornoDireita->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+
+			}
+			else if(i==0) //Condição de contorno inferior
+			{
+				aS[i][j] = 0;
+
+				if(condicaoDeContornoInferior->dinamica)
+				{
+					static_cast<CondicaoDeContornoDinamica*>(condicaoDeContornoInferior)->DefinirTipo(x[j+1]);
+				}
+
+				if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					b[i][j] = b[i][j] + ( fluxoS*dx + dx*(taus/dymais))*condicaoDeContornoInferior->fi;
+					
+					sp = sp +fluxoS*dx +dx*(taus/dymais);
+				}
+				else if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + (fluxoS*dx/(taus/dymais) + dx )*condicaoDeContornoInferior->fluxo;
+
+				}
+				else if(condicaoDeContornoInferior->tipo==CondicaoDeContorno::terceiroTipo)
+				{
+					//Não implementado
+					return false;
+
+				}
+
+			}
+			else if(i==(numeroDeVolumesY-1))//Condição de contorno superior
+			{
+				aN[i][j] = 0;
+
+				if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::primeiroTipo)
+				{
+					//Não implementado
+					return false;
+				}
+				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::segundoTipo) 
+				{
+					b[i][j] = b[i][j] + (-dx)*condicaoDeContornoSuperior->fluxo;
 				}
 				else if(condicaoDeContornoSuperior->tipo==CondicaoDeContorno::terceiroTipo)
 				{

@@ -72,7 +72,11 @@ private:
 		double** peclet, double** fiInstanteAnterior, Difusividade* difusividade, FluxoMassicoVariavel* fluxoMassico,
 		TermoFonte* termoFonte, CondicaoDeContorno* condicaoDeContornoEsquerda, CondicaoDeContorno* condicaoDeContornoDireita,
 		CondicaoDeContorno* condicaoDeContornoSuperior, CondicaoDeContorno* condicaoDeContornoInferior);
-
+	static bool DefinirMalhaUpwind(double** aP, double** aE, double** aW, double** aN, double** aS, double** b, int numeroDeVolumesX,
+		double dx, double* x, int numeroDeVolumesY, double dy, double* y, double dt, double** fi, double** peclet,
+		double** fiInstanteAnterior, Difusividade* difusividade, FluxoMassicoVariavel* fluxoMassico, TermoFonte* termoFonte,
+		CondicaoDeContorno* condicaoDeContornoEsquerda, CondicaoDeContorno* condicaoDeContornoDireita, CondicaoDeContorno* condicaoDeContornoSuperior,
+		CondicaoDeContorno* condicaoDeContornoInferior);
 
 	static void AjustarCondicoesDeContorno(int numeroDeVolumesX, int numeroDeVolumesY,double* x, double dx, double dy, double** fi, 
 		Difusividade* difusividade, CondicaoDeContorno* condicaoDeContornoEsquerda, 
