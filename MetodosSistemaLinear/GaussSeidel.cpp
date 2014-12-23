@@ -1,6 +1,6 @@
 #include "GaussSeidel.h"
 
-bool GaussSeidel::Resolver(SistemaLinear1D sistema,string &mensagem) 
+bool GaussSeidel::Resolver(SistemaLinear1D sistema) 
 {
 	bool calculou=true;
 	
@@ -22,24 +22,22 @@ bool GaussSeidel::Resolver(SistemaLinear1D sistema,string &mensagem)
 
 #pragma region AlocacaoDeMemoria
 
-	incognitaPassoAnterior = static_cast<double*>(malloc(n*sizeof(double)));
-	delta= static_cast<double*>(malloc(n*sizeof(double)));
-	x = static_cast<double*>(malloc(n*sizeof(double)));
-	b = static_cast<double*>(malloc(n*sizeof(double)));
-	a=static_cast<double**>(malloc(n*sizeof(double*)));
-	erro=static_cast<double*>(malloc(n*sizeof(double)));
-	residuo=static_cast<double*>(malloc(n*sizeof(double)));
+	incognitaPassoAnterior =new double[n];
+	delta=new double[n];
+	x =new double[n];
+	b =new double[n];
+	a=new double*[n];
+	erro=new double[n];
+	residuo=new double[n];
 	
 	for (i=0; i<n; i++)
 	{
-		a[i]=static_cast<double*>(malloc(n*sizeof(double)));
+		a[i]=new double[n];
 	}
 
 #pragma endregion 
 
 #pragma region Alimentação dos dados
-
-	mensagem = "";
 
 	for (int i = 0; i < n; ++i)
 	{
@@ -60,9 +58,9 @@ bool GaussSeidel::Resolver(SistemaLinear1D sistema,string &mensagem)
 
 	bool eDominante = VerificarDominaciaDiagonal(n,a);
 	
-	if(!eDominante)
+	/*if(!eDominante)
 		mensagem = "O sistema nao possui dominancia diagonal.";
-
+*/
 #pragma endregion
 
 calculo:
@@ -126,18 +124,18 @@ calculo:
 
 #pragma region LiberacaoMemoria
 
-	free(static_cast<void*>(incognitaPassoAnterior));
-	free(static_cast<void*>(delta));
-	free(static_cast<void*>(x));
-	free(static_cast<void*>(b));
-	free(static_cast<void*>(erro));
-	free(static_cast<void*>(residuo));
+	delete [] incognitaPassoAnterior;
+	delete [] delta;
+	delete [] x;
+	delete [] b;
+	delete [] erro;
+	delete [] residuo;
+	
 	for (i=0; i<n; i++)
 	{
-		free(static_cast<void*>(a[i]));
-		
+		delete [] a[i];
 	}
-	free(static_cast<void*>(a));
+	delete [] a;
 
 	#pragma endregion 
 

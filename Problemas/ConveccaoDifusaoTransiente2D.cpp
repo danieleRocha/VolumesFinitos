@@ -39,18 +39,20 @@ bool ConveccaoDifusaoTransiente2D::Resolver()
 	calculou = IniciarCalculos();
 	if(!calculou) goto liberarMemoria;
 
-	ImprimirResultados(tempo[0]);
+	//ImprimirResultados(tempo[0]);
 
 	for (int i = 1; i < nTempo; i++)
 	{
+		cout<<"Tempo = "<<tempo[i]<"calculando...";
 		calculou = Calcular();
 		if(!calculou) goto liberarMemoria;
 
-		ImprimirResultados(tempo[i]);
+		
 	}
 	
+	ImprimirResultados(tempo[nTempo-1]);
 
-	arquivo<<"\nCalculos finalizados com sucesso.\n\n";
+	//arquivo<<"\nCalculos finalizados com sucesso.\n\n";
 	cout<<"\nCalculos finalizados com sucesso.\n\n";
 
 liberarMemoria:
@@ -94,7 +96,7 @@ void ConveccaoDifusaoTransiente2D::ObterCondicoesIniciaisEDeContorno()
 	
 	for(int j = 0;j<=numeroDeVolumesX;j++)
 	{
-		if(((x[j]>2.5)||(x[j]==2.5))&&((x[j]<3.5)||(x[j]==3.5)))
+		if(((x[j]>2.5)||(fabs(x[j]-2.5)<1e-5))&&((x[j]<3.5)||(fabs(x[j]-3.5)<1e-5)))
 		{
 			fiNumerico[0][j] = fiEntrada;
 		}
@@ -169,14 +171,14 @@ double ConveccaoDifusaoTransiente2D::FluxoMassicoConvecaoDifusaoTransiente2D::Ca
 
 void ConveccaoDifusaoTransiente2D::CondicaoDeContornoDinamicaConvecaoDifusaoTransiente2D::DefinirTipo(double x)
 {
-	if((x<2.5)||(x>3.5))
-	{
-		this->tipo = CondicaoDeContorno::segundoTipo;
-		this->fluxo = fluxoContorno;
-	}
-	else
+	if(((x>2.5)||(fabs(x-2.5)<1e-5))&&((x<3.5)||(fabs(x-3.5)<1e-5)))
 	{
 		this->tipo = CondicaoDeContorno::primeiroTipo;
 		this->fi = fiContorno;
+	}
+	else
+	{
+		this->tipo = CondicaoDeContorno::segundoTipo;
+		this->fluxo = fluxoContorno;
 	}
 }

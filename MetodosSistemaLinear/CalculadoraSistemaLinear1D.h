@@ -12,6 +12,7 @@ class CalculadoraSistemaLinear1D
 public:
 	static bool ResolverSistemaLinear(double* resposta,double* aP, double* aE,double* aEE, double* aW, double* aWW, double* b, int n,int numeroDoMetodoParaSistemaLinear1D);
 	static bool ResolverSistemaLinear(double* resposta, double** matrizCoeficientes, double* b, int n, int numeroDoMetodoParaSistemaLinear1D);
+	static bool ResolverSistemaLinear(double* resposta, double** matrizCoeficientes, double* b, double* dThomas, double* bThomas, int n);
 };
 
 #endif

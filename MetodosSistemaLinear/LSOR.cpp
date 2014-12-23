@@ -1,19 +1,64 @@
 #include "LSOR.h"
 
 
-bool LSOR::Resolver(SistemaLinear2D sistema, string& mensagem)
+LSOR::LSOR(int ordem)
+{
+	#pragma region AlocacaoDeMemoria
+
+	dThomas = new double[ordem];
+	bThomas= new double[ordem];
+
+	incognitasPassoAnterior=new double*[ordem];
+	delta=new double*[ordem];
+	A = new double*[ordem];
+	b = new double[ordem];
+	r =  new double[ordem];
+	
+
+	for (int i=0; i<ordem; i++)
+	{
+		incognitasPassoAnterior[i]=new double[ordem];
+		delta[i]=new double[ordem];
+		A[i]=new double[ordem];
+	}
+	#pragma endregion 
+}
+
+LSOR::~LSOR()
+{
+	#pragma region LiberacaoMemoria
+
+	delete [] dThomas;
+	delete [] bThomas;
+	
+	for (int i=0; i<ordem; i++)
+	{
+		delete [] A[i];
+		delete [] incognitasPassoAnterior[i];
+		delete [] delta[i];
+	}
+	delete [] A;
+	delete [] b;
+	delete [] r;
+	delete [] incognitasPassoAnterior;
+	delete [] delta;
+		
+	#pragma endregion
+}
+
+bool LSOR::Resolver(SistemaLinear2D sistema)
 {
 	#pragma region Declaração dos dados
 
 	bool calculou=true;
 		
-	double* b;
+	/*double* b;
 	double* r;
 	double** A;
 	double** incognitasPassoAnterior;
-	double** delta;
+	double** delta;*/
 
-	int ordem = sistema.dimensaoMatriz;
+	ordem = sistema.dimensaoMatriz;
 
 	double erroMaximo = 100;
 	double deltaPermitido = 0.1; //%
@@ -21,23 +66,11 @@ bool LSOR::Resolver(SistemaLinear2D sistema, string& mensagem)
 	int numeroMaximoIteracoes = 100;
 	double relaxacao = 1.3;
 
+	/*double* dThomas;
+	double* bThomas;*/
+
 	#pragma endregion
 
-	#pragma region AlocacaoDeMemoria
-
-	incognitasPassoAnterior=static_cast<double**>(malloc(ordem*sizeof(double*)));
-	delta=static_cast<double**>(malloc(ordem*sizeof(double*)));
-	A = static_cast<double**>(malloc(ordem*sizeof(double*)));
-	b = static_cast<double*>(malloc(ordem*sizeof(double)));
-	r = static_cast<double*>(malloc(ordem*sizeof(double))); 
-
-	for (int i=0; i<ordem; i++)
-	{
-		incognitasPassoAnterior[i]=static_cast<double*>(malloc(ordem*sizeof(double)));
-		delta[i]=static_cast<double*>(malloc(ordem*sizeof(double)));
-		A[i]=static_cast<double*>(malloc(ordem*sizeof(double)));
-	}
-	#pragma endregion 
 
 	#pragma region Calculo
 
@@ -109,7 +142,7 @@ bool LSOR::Resolver(SistemaLinear2D sistema, string& mensagem)
 			        }*/
 
 			//Calcula o sistema Linear por Thomas
-			calculou = CalculadoraSistemaLinear1D::ResolverSistemaLinear(r,A,b,ordem,1);
+			calculou = CalculadoraSistemaLinear1D::ResolverSistemaLinear(r,A,b,dThomas,bThomas,ordem);
 
 			if(!calculou) goto liberarMemoria;
 
@@ -166,21 +199,7 @@ bool LSOR::Resolver(SistemaLinear2D sistema, string& mensagem)
 
 liberarMemoria:
 
-	#pragma region LiberacaoMemoria
-
-	for (int i=0; i<ordem; i++)
-	{
-		free(static_cast<void*>(A[i]));
-		free(static_cast<void*>(incognitasPassoAnterior[i]));
-		free(static_cast<void*>(delta[i]));
-	}
-	free(static_cast<void*>(A));
-	free(static_cast<void*>(b));
-	free(static_cast<void*>(r));
-	free(static_cast<void*>(incognitasPassoAnterior));
-	free(static_cast<void*>(delta));
-
-	#pragma endregion
+	
 
 
 	return calculou;

@@ -7,8 +7,20 @@
 class LSOR :
 	public MetodoParaSistemaLinear2D
 {
+private:
+	int ordem;
+	double* b;
+	double* r;
+	double** A;
+	double** incognitasPassoAnterior;
+	double** delta;
+	double* dThomas;
+	double* bThomas;
+
 public:
-	bool Resolver(SistemaLinear2D sistema, string &mensagem) override;
+	LSOR(int ordem);
+	~LSOR();
+	bool Resolver(SistemaLinear2D sistema) override;
 	
 };
 

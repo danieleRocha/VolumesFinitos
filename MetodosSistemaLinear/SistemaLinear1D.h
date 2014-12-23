@@ -13,6 +13,7 @@ public:
 	double* vetorCoeficientes;
 	
 	SistemaLinear1D(int dimensaoMatriz, double** matrizDeCoeficientes,double *vetorResposta);
+	SistemaLinear1D(int dimensaoMatriz, double** matrizDeCoeficientes,double *vetorResposta,double *vetorCoeficientes);
 	~SistemaLinear1D();
 };
 

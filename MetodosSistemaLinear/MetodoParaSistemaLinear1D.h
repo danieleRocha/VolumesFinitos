@@ -11,7 +11,7 @@ class MetodoParaSistemaLinear1D
 {
 public:
 	
-	virtual bool Resolver(SistemaLinear1D sistema,string &mensagem)=0;
+	virtual bool Resolver(SistemaLinear1D sistema)=0;
 
 	virtual ~MetodoParaSistemaLinear1D();
 };

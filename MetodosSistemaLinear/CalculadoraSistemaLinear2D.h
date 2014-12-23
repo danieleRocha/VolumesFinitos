@@ -10,8 +10,11 @@
 class CalculadoraSistemaLinear2D
 {
 public:
+	
+	
 	static bool ResolverSistemaLinear(int dimensaoMatriz, double** aP,double** aE,double** aW,
 		double** aN,double** aS,double **b,double **resposta);
+	
 };
 
 #endif

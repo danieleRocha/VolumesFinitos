@@ -6,14 +6,17 @@ bool CalculadoraSistemaLinear2D::ResolverSistemaLinear(int dimensaoMatriz, doubl
 {
 	bool calculou;
 
-	SistemaLinear2D* sistema = new SistemaLinear2D(dimensaoMatriz,aP,aE,aW,aN,aS,b,resposta);
+	SistemaLinear2D* sistema= new SistemaLinear2D(dimensaoMatriz,aP,aE,aW,aN,aS,b,resposta);
 
-	MetodoParaSistemaLinear2D* metodo =  new LSOR();
+	MetodoParaSistemaLinear2D* metodo =  new LSOR(sistema->dimensaoMatriz);
 
-	string mensagem = "";
+	calculou = metodo->Resolver(*sistema);
 
-	calculou = metodo->Resolver(*sistema,mensagem);
+	cout.precision(4);
 
+	/*cout<<"\n\nMatriz: \n\n";
+
+	cout<<"\naP             aE               aW              aN            aS             b";*/
 	if(calculou)
 	{
 		for (int i = 0; i < dimensaoMatriz; i++)
@@ -21,9 +24,14 @@ bool CalculadoraSistemaLinear2D::ResolverSistemaLinear(int dimensaoMatriz, doubl
 			for (int j = 0; j < dimensaoMatriz; j++)
 			{
 				resposta[i][j] = sistema->resposta[i][j];
+
+				//cout<<"\n"<<aP[i][j]<<"     "<<aE[i][j]<<"     "<<aW[i][j]<<"     "<<aN[i][j]<<"    "<<aS[i][j]<<"    "<<b[i][j]<<"   ";
 			}
 		}
 	}
+
+    delete metodo;
+	delete sistema;
 
 	return calculou;
 }

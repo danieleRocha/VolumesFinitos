@@ -42,7 +42,7 @@ bool Problema2D::IniciarCalculos()
 
 	IniciarVariavelNumerica();
 
-	
+
 
 
 	return calculou;
@@ -51,7 +51,7 @@ bool Problema2D::IniciarCalculos()
 bool Problema2D::CalcularVariavelIndependenteTempo()
 {
 	tempo[0] = 0;
-	
+
 	for(int i = 1;i<nTempo;i++)
 	{
 		tempo[i] = tempo[i-1] + dt;
@@ -105,10 +105,10 @@ bool Problema2D::CalcularSolucaoNumerica()
 void Problema2D::ImprimirResultados(double t)
 {
 	arquivo.precision(4);
-	cout.precision(4);
+	/*cout.precision(4);*/
 
-	arquivo<<"\n\nResultados no tempo:"<<t<<" \n\n";
-	cout<<"\n\nResultados no tempo:"<<t<<" \n\n";
+	//arquivo<<"\n\nResultados no tempo:"<<t<<" \n\n";
+	/*cout<<"\n\nResultados no tempo:"<<t<<" \n\n";*/
 
 	arquivo<<"z=[";
 
@@ -117,11 +117,11 @@ void Problema2D::ImprimirResultados(double t)
 		for(int j=0;j<=numeroDeVolumesX+1;j++)
 		{
 			arquivo<< fixed<< fiNumerico[i][j]<<"  ";
-			cout<< fixed<< fiNumerico[i][j]<<"  ";
+			/*cout<< fixed<< fiNumerico[i][j]<<"  ";*/
 		}
 
 		arquivo<<";\n";
-		cout<< "\n";
+		/*cout<< "\n";*/
 	}
 
 	arquivo<<"];";
@@ -133,24 +133,24 @@ void Problema2D::AlocarMemoria()
 {
 	const int nx = numeroDeVolumesX+2;
 	const int ny = numeroDeVolumesY+2;
-	
-	x = static_cast<double*>(malloc(nx*sizeof(double)));
-	y = static_cast<double*>(malloc(ny*sizeof(double)));
-	tempo = static_cast<double*>(malloc(nTempo*sizeof(double)));
 
-	fiAnalitico = static_cast<double**>(malloc(ny*sizeof(double)));
-	fiNumerico = static_cast<double**>(malloc(ny*sizeof(double)));
-	peclet = static_cast<double**>(malloc(ny*sizeof(double)));
-	desviosRelativos = static_cast<double**>(malloc(ny*sizeof(double)));
-	desviosAbsolutos = static_cast<double**>(malloc(ny*sizeof(double)));
+	x =  new double[nx];
+	y =  new double[ny];
+	tempo = new double[nTempo];
+
+	fiAnalitico =new double*[ny];
+	fiNumerico =new double*[ny];
+	peclet =new double*[ny];
+	desviosRelativos =new double*[ny];
+	desviosAbsolutos =new double*[ny];
 
 	for (int i=0; i<ny; i++)
 	{
-		fiAnalitico[i]=static_cast<double*>(malloc(nx*sizeof(double)));
-		fiNumerico[i]=static_cast<double*>(malloc(nx*sizeof(double)));
-		peclet[i]=static_cast<double*>(malloc(nx*sizeof(double)));
-		desviosRelativos[i]=static_cast<double*>(malloc(nx*sizeof(double)));
-		desviosAbsolutos[i]=static_cast<double*>(malloc(nx*sizeof(double)));
+		fiAnalitico[i]=new double[nx];
+		fiNumerico[i]=new double[nx];
+		peclet[i]=new double[nx];
+		desviosRelativos[i]=new double[nx];
+		desviosAbsolutos[i]=new double[nx];
 	}
 
 }
@@ -159,25 +159,24 @@ void Problema2D::LiberarMemoria()
 {
 	const int ny = numeroDeVolumesY+2;
 
-	free(static_cast<void*>(x));
-	free(static_cast<void*>(y));
-	free(static_cast<void*>(tempo));
+	delete [] x;
+	delete [] y;
+	delete [] tempo;
 
 	for (int i=0; i<ny; i++)
 	{
-		free(static_cast<void*>(fiAnalitico[i]));
-		free(static_cast<void*>(fiNumerico[i]));
-		free(static_cast<void*>(peclet[i]));
-		free(static_cast<void*>(desviosRelativos[i]));
-		free(static_cast<void*>(desviosAbsolutos[i]));
-				
+		delete [] fiAnalitico[i];
+		delete [] fiNumerico[i];
+		delete [] peclet[i];
+		delete [] desviosRelativos[i];
+		delete [] desviosAbsolutos[i];
 	}
 
-	free(static_cast<void*>(fiAnalitico));
-	free(static_cast<void*>(fiNumerico));
-	free(static_cast<void*>(peclet));
-	free(static_cast<void*>(desviosRelativos));
-	free(static_cast<void*>(desviosAbsolutos));
+	delete [] fiAnalitico;
+	delete [] fiNumerico;
+	delete [] peclet;
+	delete [] desviosRelativos;
+	delete [] desviosAbsolutos;
 
 	arquivo.close();
 }

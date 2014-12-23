@@ -102,22 +102,22 @@ void Problema1D::AlocarMemoria()
 {
 	const int n = numeroDeVolumes+2;
 	
-	x = static_cast<double*>(malloc(n*sizeof(double)));
-	fiAnalitico = static_cast<double*>(malloc(n*sizeof(double)));
-	fiNumerico = static_cast<double*>(malloc(n*sizeof(double)));
-	peclet = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosRelativos = static_cast<double*>(malloc(n*sizeof(double)));
-	desviosAbsolutos = static_cast<double*>(malloc(n*sizeof(double)));
+	x = new double[n];
+	fiAnalitico = new double[n];
+	fiNumerico = new double[n];
+	peclet = new double[n];
+	desviosRelativos = new double[n];
+	desviosAbsolutos = new double[n];
 }
 
 void Problema1D::LiberarMemoria()
 {
-	free(static_cast<void*>(x));
-	free(static_cast<void*>(fiAnalitico));
-	free(static_cast<void*>(fiNumerico));
-	free(static_cast<void*>(peclet));
-	free(static_cast<void*>(desviosRelativos));
-	free(static_cast<void*>(desviosAbsolutos));
-
+	delete [] x;
+	delete [] fiAnalitico;
+	delete [] fiNumerico;
+	delete [] peclet;
+	delete [] desviosRelativos;
+	delete [] desviosAbsolutos;
+	
 	arquivo.close();
 }

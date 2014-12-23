@@ -8,11 +8,11 @@ bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double*
 
 #pragma region AlocacaoDeMemoria
 
-	matrizCoeficientes=static_cast<double**>(malloc(n*sizeof(double*)));
+	matrizCoeficientes=new double*[n];
 
 	for (int i=0; i<n; i++)
 	{
-		matrizCoeficientes[i]=static_cast<double*>(malloc(n*sizeof(double)));
+		matrizCoeficientes[i]=new double[n];
 	}
 
 #pragma endregion 
@@ -48,9 +48,7 @@ bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double*
 
 	MetodoParaSistemaLinear1D* metodo =  FabricaDeMetodosParaSistemaLinear::CriarMetodo(numeroDoMetodoParaSistemaLinear1D);
 
-	string mensagem = "";
-
-	calculou = metodo->Resolver(*sistema,mensagem);
+	calculou = metodo->Resolver(*sistema);
 
 	if(calculou)
 	{
@@ -64,10 +62,9 @@ bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double*
 
 	for (int i=0; i<n; i++)
 	{
-		free(static_cast<void*>(matrizCoeficientes[i]));
-
+		delete [] matrizCoeficientes[i];
 	}
-	free(static_cast<void*>(matrizCoeficientes));
+	delete [] matrizCoeficientes;
 
 #pragma endregion 
 
@@ -83,9 +80,7 @@ bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double*
 
 	MetodoParaSistemaLinear1D* metodo =  FabricaDeMetodosParaSistemaLinear::CriarMetodo(numeroDoMetodoParaSistemaLinear1D);
 
-	string mensagem = "";
-
-	calculou = metodo->Resolver(*sistema,mensagem);
+	calculou = metodo->Resolver(*sistema);
 
 	if(calculou)
 	{
@@ -94,6 +89,33 @@ bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double*
 			resposta[i] = sistema->vetorCoeficientes[i];
 		}
 	}
+
+	delete sistema;
+	delete metodo;
+
+	return calculou;
+}
+
+bool CalculadoraSistemaLinear1D::ResolverSistemaLinear(double* resposta, double** matrizCoeficientes, double* b,double* dThomas,double* bThomas, int n)
+{
+	bool calculou;
+		
+	SistemaLinear1D* sistema = new SistemaLinear1D(n,matrizCoeficientes,b,resposta);
+
+	Thomas* metodo =  new Thomas();
+
+	calculou = metodo->Resolver(*sistema,dThomas,bThomas);
+
+	if(calculou)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			resposta[i] = sistema->vetorCoeficientes[i];
+		}
+	}
+
+	delete sistema;
+	delete metodo;
 
 	return calculou;
 }
